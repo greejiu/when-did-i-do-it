@@ -246,7 +246,6 @@ function applyMode(mode) {
   select.dispatchEvent(new Event("change", { bubbles: true }));
   syncButtons();
   syncPopup();
-  notifySortChanged();
 }
 
 injectStyles();
