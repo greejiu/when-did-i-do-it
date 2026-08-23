@@ -1,0 +1,253 @@
+.subitem-progress {
+  margin: 10px 0 2px;
+  padding: 9px 10px;
+  border: 1px solid #e0dfd6;
+  border-radius: 11px;
+  background: #f8f7f2;
+}
+
+.subitem-progress-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #747a72;
+  font-size: 11px;
+}
+
+.subitem-progress-list {
+  display: grid;
+  gap: 4px;
+}
+
+.subitem-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 3px 2px;
+  color: #454b44;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.subitem-check-row input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: #5f705f;
+  flex: 0 0 auto;
+}
+
+.subitem-check-row.is-checked span {
+  color: #858a83;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.subitem-manager-dialog {
+  width: min(430px, calc(100% - 24px));
+  max-height: min(84dvh, 680px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #d7d5cb;
+  border-radius: 18px;
+  background: #fbfaf6;
+  color: #30342f;
+  box-shadow: 0 22px 64px rgba(58, 63, 55, 0.2);
+}
+
+.subitem-manager-dialog::backdrop {
+  background: rgba(62, 66, 58, 0.34);
+  backdrop-filter: blur(1px);
+}
+
+.subitem-manager-shell {
+  max-height: min(84dvh, 680px);
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.subitem-manager-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e3e0d7;
+}
+
+.subitem-manager-header h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.subitem-manager-header p {
+  margin: 0;
+  color: #71766e;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.subitem-manager-close {
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 1px solid #d7d5cb;
+  border-radius: 999px;
+  background: #fffefa;
+  color: #30342f;
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.subitem-manager-list {
+  display: grid;
+  gap: 7px;
+}
+
+.subitem-manager-empty {
+  margin: 0;
+  padding: 12px 2px;
+  color: #7a8078;
+  font-size: 13px;
+}
+
+.subitem-manager-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 42px;
+  padding: 7px 9px;
+  border: 1px solid #deddd4;
+  border-radius: 10px;
+  background: #fffefa;
+}
+
+.subitem-manager-name {
+  min-width: 0;
+  flex: 1;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.subitem-manager-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.subitem-manager-row button,
+.subitem-add-form button {
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid #d7d5cb;
+  border-radius: 8px;
+  background: #fffefa;
+  color: #30342f;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.subitem-manager-row button.is-danger {
+  color: #9a5d58;
+}
+
+.subitem-manager-row button.is-primary,
+.subitem-add-form button {
+  border-color: #4f5f50;
+  background: #4f5f50;
+  color: #fffdf8;
+}
+
+.subitem-manager-row input,
+.subitem-add-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 9px;
+  border: 1px solid #d7d5cb;
+  border-radius: 9px;
+  background: #fffefa;
+  color: #30342f;
+  font: inherit;
+  font-size: 13px;
+}
+
+.subitem-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e3e0d7;
+}
+
+.subitem-manager-message {
+  min-height: 18px;
+  margin: 7px 0 0;
+  color: #71766e;
+  font-size: 12px;
+}
+
+.item-action-dialog-list [data-subitem-manage] {
+  color: #3f5141;
+}
+
+.history-calendar-day.has-subitem-record::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #7f927d;
+  box-shadow: 0 0 0 1px rgba(251, 250, 246, 0.85);
+  z-index: 3;
+}
+
+.history-calendar-day.has-record.has-subitem-record::after {
+  bottom: 3px;
+  background: #6d826b;
+}
+
+@media (max-width: 480px) {
+  .subitem-progress {
+    margin-top: 8px;
+    padding: 8px 9px;
+  }
+
+  .subitem-check-row {
+    min-height: 30px;
+    font-size: 12px;
+  }
+
+  .subitem-manager-dialog,
+  .subitem-manager-shell {
+    max-height: 88dvh;
+  }
+
+  .subitem-add-form {
+    grid-template-columns: 1fr;
+  }
+
+  .subitem-add-form button {
+    justify-self: start;
+  }
+
+  .history-calendar-day.has-subitem-record::after {
+    bottom: 4px;
+    width: 5px;
+    height: 5px;
+  }
+}
