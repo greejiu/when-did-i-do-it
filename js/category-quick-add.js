@@ -1,3 +1,5 @@
+import "./duplicate-guard.js?v=1";
+
 function cleanCategoryName(value) {
   const text = (value || "").trim();
   if (!text) return "";
