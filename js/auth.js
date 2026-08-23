@@ -1,8 +1,8 @@
 import { supabase } from "./supabase.js";
-import { ensureDefaultCategories, getCategories } from "./categories.js?v=9";
-import { ensureDefaultSections, getSections } from "./sections.js?v=9";
+import { ensureDefaultCategories, getCategories } from "./categories.js?v=10";
+import { ensureDefaultSections, getSections } from "./sections.js?v=10";
 import { initializeItemsUI, resetItemsUI } from "./items.js?v=9";
-import { initializeTaxonomyUI, resetTaxonomyUI } from "./taxonomy.js?v=9";
+import { initializeTaxonomyUI, resetTaxonomyUI } from "./taxonomy.js?v=10";
 
 const authSection = document.querySelector("#auth-section");
 const appSection = document.querySelector("#app-section");
@@ -50,15 +50,7 @@ function renderCategories(categories) {
   for (const category of categories) {
     const item = document.createElement("div");
     item.className = "category-item";
-
-    const icon = document.createElement("span");
-    icon.className = "category-icon";
-    icon.textContent = category.icon || "•";
-
-    const name = document.createElement("span");
-    name.textContent = category.name;
-
-    item.append(icon, name);
+    item.textContent = category.name;
     categoryList.append(item);
   }
 
