@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>그거 언제 했더라</title>
-  <link rel="stylesheet" href="./css/style.css?v=10" />
+  <link rel="stylesheet" href="./css/style.css?v=11" />
 </head>
 <body>
   <main>
@@ -50,30 +50,6 @@
           </div>
         </div>
         <div id="category-list" class="category-list" aria-live="polite"></div>
-
-        <section id="taxonomy-panel" class="taxonomy-panel hidden">
-          <div class="taxonomy-block">
-            <div class="taxonomy-heading">
-              <h3>카테고리 관리</h3>
-              <button id="taxonomy-add-category" class="secondary mini-button" type="button">+ 카테고리</button>
-            </div>
-            <div id="taxonomy-category-list" class="taxonomy-list"></div>
-          </div>
-
-          <div class="taxonomy-block">
-            <div class="taxonomy-heading">
-              <h3>섹션 관리</h3>
-              <button id="taxonomy-add-section" class="secondary mini-button" type="button">+ 섹션</button>
-            </div>
-            <label class="taxonomy-category-picker">
-              카테고리
-              <select id="taxonomy-section-category"></select>
-            </label>
-            <div id="taxonomy-section-list" class="taxonomy-list"></div>
-          </div>
-
-          <p id="taxonomy-message" class="message" aria-live="polite"></p>
-        </section>
       </section>
 
       <section>
@@ -149,6 +125,42 @@
     </section>
   </main>
 
-  <script type="module" src="./js/auth.js?v=10"></script>
+  <dialog id="taxonomy-modal" class="taxonomy-modal" aria-labelledby="taxonomy-modal-title">
+    <div class="taxonomy-modal-shell">
+      <div class="taxonomy-modal-header">
+        <div>
+          <h2 id="taxonomy-modal-title">카테고리·섹션 관리</h2>
+          <p class="muted">이모지는 카테고리 이름에 직접 입력할 수 있어요.</p>
+        </div>
+        <button id="taxonomy-close" class="secondary taxonomy-close" type="button" aria-label="닫기">×</button>
+      </div>
+
+      <div class="taxonomy-modal-content">
+        <section class="taxonomy-block">
+          <div class="taxonomy-heading">
+            <h3>카테고리</h3>
+            <button id="taxonomy-add-category" class="secondary mini-button" type="button">+ 카테고리</button>
+          </div>
+          <div id="taxonomy-category-list" class="taxonomy-list"></div>
+        </section>
+
+        <section class="taxonomy-block">
+          <div class="taxonomy-heading">
+            <h3>섹션</h3>
+            <button id="taxonomy-add-section" class="secondary mini-button" type="button">+ 섹션</button>
+          </div>
+          <label class="taxonomy-category-picker">
+            카테고리
+            <select id="taxonomy-section-category"></select>
+          </label>
+          <div id="taxonomy-section-list" class="taxonomy-list"></div>
+        </section>
+      </div>
+
+      <p id="taxonomy-message" class="message" aria-live="polite"></p>
+    </div>
+  </dialog>
+
+  <script type="module" src="./js/auth.js?v=11"></script>
 </body>
 </html>
