@@ -1,0 +1,237 @@
+:root {
+  color: #30342f;
+  background: #f2f0e9;
+  --comfort-bg: #f2f0e9;
+  --comfort-surface: #fbfaf6;
+  --comfort-surface-soft: #f5f3ed;
+  --comfort-sage: #e9eee7;
+  --comfort-sage-strong: #dfe7de;
+  --comfort-border: #d7d5cb;
+  --comfort-border-soft: #e3e0d7;
+  --comfort-text: #30342f;
+  --comfort-muted: #71766e;
+  --comfort-accent: #5f705f;
+  --comfort-accent-dark: #4f5f50;
+  --comfort-accent-soft: #e3ebe2;
+  --comfort-danger: #9a5d58;
+}
+
+body {
+  background: var(--comfort-bg);
+  color: var(--comfort-text);
+}
+
+.card {
+  background: var(--comfort-surface);
+  border-color: var(--comfort-border);
+  box-shadow: 0 10px 30px rgba(66, 70, 61, 0.055);
+}
+
+.app-card > section {
+  background: var(--comfort-surface-soft);
+  border-color: var(--comfort-border-soft);
+}
+
+.description,
+.message,
+.account-email,
+.muted,
+.helper,
+.item-meta,
+.item-category-badge,
+.category-filter-button small,
+.history-weekdays,
+.record-item-meta {
+  color: var(--comfort-muted);
+}
+
+input,
+select {
+  background: #fffefa;
+  border-color: var(--comfort-border);
+  color: var(--comfort-text);
+}
+
+input:focus,
+select:focus {
+  outline-color: var(--comfort-accent);
+}
+
+select:disabled {
+  background: #eeece5;
+  color: #92968f;
+}
+
+button {
+  border-color: var(--comfort-accent-dark);
+}
+
+button.primary,
+.bottom-nav-button.is-active,
+.category-filter-button.is-active {
+  background: var(--comfort-accent-dark);
+  border-color: var(--comfort-accent-dark);
+  color: #fffdf8;
+}
+
+button.secondary,
+.category-filter-button,
+.record-item-button {
+  background: #fffefa;
+  border-color: var(--comfort-border);
+  color: var(--comfort-text);
+}
+
+button.secondary:hover,
+.category-filter-button:not(.is-active):hover,
+.record-item-button:hover,
+.bottom-nav-button:not(.is-active):hover {
+  background: var(--comfort-accent-soft);
+  color: var(--comfort-text);
+}
+
+.category-filter-button.is-active small {
+  color: #e8eee6;
+}
+
+.item-form,
+.item-card,
+.category-item,
+.settings-block,
+.taxonomy-row,
+.history-record-row {
+  background: #fffefa;
+  border-color: var(--comfort-border);
+}
+
+.item-category-heading {
+  border-bottom-color: var(--comfort-border-soft);
+}
+
+.item-section-heading h4 {
+  color: #596057;
+}
+
+.item-card {
+  box-shadow: 0 1px 3px rgba(66, 70, 61, 0.045);
+}
+
+.item-overflow-button {
+  color: #5d655c;
+}
+
+.item-overflow-button:hover,
+.item-overflow-button[aria-expanded="true"] {
+  background: var(--comfort-accent-soft);
+}
+
+.item-overflow-menu {
+  background: #fffefa;
+  border-color: var(--comfort-border);
+  box-shadow: 0 10px 28px rgba(66, 70, 61, 0.13);
+}
+
+.item-overflow-menu .item-overflow-action {
+  color: #454b44;
+}
+
+.item-overflow-menu .item-overflow-action:hover {
+  background: var(--comfort-accent-soft);
+}
+
+.item-overflow-menu .delete-button,
+.danger-text {
+  color: var(--comfort-danger) !important;
+}
+
+.due-upcoming {
+  color: #516756;
+}
+
+.due-today {
+  color: #59694f;
+}
+
+.due-overdue {
+  color: #8c5d55;
+}
+
+.bottom-nav {
+  background: rgba(251, 250, 246, 0.96);
+  border-color: var(--comfort-border);
+  box-shadow: 0 12px 34px rgba(66, 70, 61, 0.13);
+}
+
+.bottom-nav-button {
+  color: #737970;
+}
+
+.taxonomy-modal,
+.history-modal {
+  background: var(--comfort-surface);
+  border-color: var(--comfort-border);
+  color: var(--comfort-text);
+  box-shadow: 0 24px 70px rgba(58, 63, 55, 0.18);
+}
+
+.taxonomy-modal::backdrop,
+.history-modal::backdrop {
+  background: rgba(62, 66, 58, 0.34);
+}
+
+.taxonomy-modal-header,
+.history-modal-header {
+  border-bottom-color: var(--comfort-border-soft);
+}
+
+.taxonomy-block,
+.history-calendar-card,
+.history-record-card {
+  background: var(--comfort-sage);
+  border-color: #d5ddd3;
+}
+
+.history-calendar-day {
+  color: #3f453e;
+}
+
+.history-calendar-day:hover:not(:disabled) {
+  background: #fffefa;
+  border-color: #cdd6cb;
+}
+
+.history-calendar-day.is-today {
+  border-color: var(--comfort-accent);
+  background: #f5f8f3;
+}
+
+.history-calendar-day.has-record {
+  background: #fffefa;
+  border-color: #b9c6b7;
+}
+
+.history-calendar-day.is-future {
+  color: #b3b6af;
+}
+
+.history-calendar-dot {
+  background: var(--comfort-accent-dark);
+}
+
+.record-item-button {
+  box-shadow: none;
+}
+
+.record-item-button:hover {
+  border-color: #bec9bb;
+}
+
+.record-item-arrow {
+  color: #7b8478;
+}
+
+@media (max-width: 480px) {
+  body {
+    background: #efede6;
+  }
+}
