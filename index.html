@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>그거 언제 했더라</title>
-  <link rel="stylesheet" href="./css/style.css?v=5" />
+  <link rel="stylesheet" href="./css/style.css?v=6" />
 </head>
 <body>
   <main>
@@ -70,10 +70,18 @@
             </label>
           </div>
 
-          <label>
-            카테고리
-            <select id="item-category" required></select>
-          </label>
+          <div class="form-row two-columns">
+            <label>
+              카테고리
+              <select id="item-category" required></select>
+            </label>
+
+            <label>
+              섹션 <span class="optional">(선택)</span>
+              <select id="item-section"></select>
+              <span class="helper">카테고리에 맞는 섹션만 보여줘.</span>
+            </label>
+          </div>
 
           <label>
             반복
@@ -121,6 +129,6 @@
     </section>
   </main>
 
-  <script type="module" src="./js/auth.js?v=4"></script>
+  <script type="module" src="./js/auth.js?v=6"></script>
 </body>
 </html>
