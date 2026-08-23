@@ -75,14 +75,7 @@ function ensureQuickAddModal() {
   closeButton?.addEventListener("click", closeQuickAddModal);
 
   quickAddModal.addEventListener("click", (event) => {
-    const rect = quickAddModal.getBoundingClientRect();
-    const isBackdropClick =
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom;
-
-    if (isBackdropClick) closeQuickAddModal();
+    if (event.target === quickAddModal) closeQuickAddModal();
   });
 
   quickAddModal.addEventListener("cancel", (event) => {
