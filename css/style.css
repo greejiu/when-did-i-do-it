@@ -39,13 +39,14 @@ h1 {
 }
 
 h2 {
-  margin-bottom: 18px;
+  margin-bottom: 0;
   font-size: 20px;
 }
 
 .description,
 .message,
-.account-email {
+.account-email,
+.muted {
   color: #666;
   line-height: 1.6;
 }
@@ -107,6 +108,12 @@ button.secondary {
   color: #222;
 }
 
+button.compact {
+  min-height: 38px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
 button:disabled {
   cursor: wait;
   opacity: 0.6;
@@ -120,11 +127,59 @@ button:disabled {
 
 .app-card {
   display: grid;
-  gap: 18px;
+  gap: 24px;
 }
 
 .app-card p {
   margin: 0;
+}
+
+.app-header,
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-email {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.section-heading {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.section-heading .muted {
+  font-size: 13px;
+}
+
+.category-list {
+  display: grid;
+  gap: 10px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.category-icon {
+  width: 28px;
+  text-align: center;
+  font-size: 20px;
+}
+
+.muted {
+  font-size: 14px;
 }
 
 .hidden {
@@ -142,5 +197,9 @@ button:disabled {
 
   .actions {
     grid-template-columns: 1fr;
+  }
+
+  .app-header {
+    align-items: center;
   }
 }
