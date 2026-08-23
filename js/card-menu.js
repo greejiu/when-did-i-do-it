@@ -1,11 +1,6 @@
-function closeAllMenus(except = null) {
-  for (const menu of document.querySelectorAll(".item-overflow-menu")) {
-    if (menu === except) continue;
-    menu.classList.add("hidden");
-    const button = menu.parentElement?.querySelector(".item-overflow-button");
-    if (button) button.setAttribute("aria-expanded", "false");
-  }
-}
+let actionDialog = null;
+let actionDialogTitle = null;
+let activeActions = null;
 
 function cleanCategoryName(value) {
   const text = (value || "").trim();
@@ -24,6 +19,79 @@ function getCategoryName(card) {
   return cleanCategoryName(heading?.textContent || "");
 }
 
+function ensureActionDialog() {
+  if (actionDialog) return actionDialog;
+
+  actionDialog = document.createElement("dialog");
+  actionDialog.className = "item-action-dialog";
+  actionDialog.innerHTML = `
+    <div class="item-action-dialog-shell">
+      <div class="item-action-dialog-header">
+        <div>
+          <h3 class="item-action-dialog-title">항목</h3>
+          <p>무엇을 할까요?</p>
+        </div>
+        <button type="button" class="item-action-dialog-close" aria-label="닫기">×</button>
+      </div>
+      <div class="item-action-dialog-list">
+        <button type="button" data-item-action="history">기록 보기</button>
+        <button type="button" data-item-action="edit">수정하기</button>
+        <button type="button" class="is-danger" data-item-action="delete">삭제하기</button>
+        <button type="button" class="is-cancel" data-item-action="cancel">취소</button>
+      </div>
+    </div>
+  `;
+
+  document.body.append(actionDialog);
+  actionDialogTitle = actionDialog.querySelector(".item-action-dialog-title");
+
+  actionDialog.querySelector(".item-action-dialog-close")?.addEventListener("click", () => {
+    if (actionDialog?.open) actionDialog.close();
+  });
+
+  actionDialog.addEventListener("click", (event) => {
+    if (event.target === actionDialog) {
+      actionDialog.close();
+      return;
+    }
+
+    const button = event.target instanceof Element
+      ? event.target.closest("[data-item-action]")
+      : null;
+    if (!(button instanceof HTMLButtonElement)) return;
+
+    const action = button.dataset.itemAction;
+    if (action === "cancel") {
+      actionDialog.close();
+      return;
+    }
+
+    const originalButton = activeActions?.[action];
+    actionDialog.close();
+
+    if (originalButton instanceof HTMLButtonElement) {
+      window.setTimeout(() => originalButton.click(), 0);
+    }
+  });
+
+  actionDialog.addEventListener("close", () => {
+    activeActions = null;
+  });
+
+  return actionDialog;
+}
+
+function openActionDialog(card, actions) {
+  const dialog = ensureActionDialog();
+  const itemName = card.querySelector(".item-title")?.textContent?.trim() || "항목";
+
+  activeActions = actions;
+  if (actionDialogTitle) actionDialogTitle.textContent = itemName;
+
+  if (dialog.open) dialog.close();
+  dialog.showModal();
+}
+
 function enhanceCard(card) {
   if (!(card instanceof HTMLElement)) return;
   if (card.dataset.compactEnhanced === "true") return;
@@ -39,7 +107,7 @@ function enhanceCard(card) {
   if (!top || !meta || !actions || !completeButton) return;
 
   card.dataset.compactEnhanced = "true";
-  card.classList.add("item-card-compact");
+  card.classList.add("item-card-compact", "item-card-clickable");
 
   const topActions = document.createElement("div");
   topActions.className = "item-top-actions";
@@ -52,50 +120,27 @@ function enhanceCard(card) {
     topActions.append(badge);
   }
 
-  const menuWrap = document.createElement("div");
-  menuWrap.className = "item-overflow-wrap";
-
-  const menuButton = document.createElement("button");
-  menuButton.type = "button";
-  menuButton.className = "item-overflow-button";
-  menuButton.textContent = "⋯";
-  menuButton.setAttribute("aria-label", `${card.querySelector(".item-title")?.textContent || "항목"} 메뉴`);
-  menuButton.setAttribute("aria-expanded", "false");
-
-  const menu = document.createElement("div");
-  menu.className = "item-overflow-menu hidden";
-
-  for (const button of [historyButton, editButton, deleteButton]) {
-    if (!button) continue;
-    button.classList.add("item-overflow-action");
-    menu.append(button);
-  }
-
-  menuButton.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const willOpen = menu.classList.contains("hidden");
-    closeAllMenus(willOpen ? menu : null);
-    menu.classList.toggle("hidden", !willOpen);
-    menuButton.setAttribute("aria-expanded", willOpen ? "true" : "false");
-  });
-
-  menu.addEventListener("click", (event) => {
-    if (event.target instanceof HTMLButtonElement) {
-      menu.classList.add("hidden");
-      menuButton.setAttribute("aria-expanded", "false");
-    }
-  });
-
-  menuWrap.append(menuButton, menu);
-  topActions.append(menuWrap);
   top.append(topActions);
 
   const bottom = document.createElement("div");
   bottom.className = "item-card-bottom";
   bottom.append(meta, completeButton);
-  card.append(bottom);
 
-  actions.remove();
+  actions.classList.add("item-card-hidden-actions");
+  actions.hidden = true;
+  card.append(bottom, actions);
+
+  const cardActions = {
+    history: historyButton,
+    edit: editButton,
+    delete: deleteButton,
+  };
+
+  card.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    if (event.target.closest("button, input, select, textarea, a")) return;
+    openActionDialog(card, cardActions);
+  });
 }
 
 function enhanceAllCards(root = document) {
@@ -103,11 +148,6 @@ function enhanceAllCards(root = document) {
     enhanceCard(card);
   }
 }
-
-document.addEventListener("click", () => closeAllMenus());
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeAllMenus();
-});
 
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
