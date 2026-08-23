@@ -18,7 +18,7 @@ body {
 }
 
 main {
-  width: min(440px, 100%);
+  width: min(640px, 100%);
 }
 
 .card {
@@ -46,7 +46,8 @@ h2 {
 .description,
 .message,
 .account-email,
-.muted {
+.muted,
+.helper {
   color: #666;
   line-height: 1.6;
 }
@@ -67,16 +68,19 @@ label {
   font-weight: 600;
 }
 
-input {
+input,
+select {
   width: 100%;
   padding: 12px 13px;
   border: 1px solid #d8d8d8;
   border-radius: 10px;
   font: inherit;
   background: #fff;
+  color: #222;
 }
 
-input:focus {
+input:focus,
+select:focus {
   outline: 2px solid #333;
   outline-offset: 1px;
 }
@@ -127,7 +131,7 @@ button:disabled {
 
 .app-card {
   display: grid;
-  gap: 24px;
+  gap: 28px;
 }
 
 .app-card p {
@@ -135,7 +139,8 @@ button:disabled {
 }
 
 .app-header,
-.section-heading {
+.section-heading,
+.item-card-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -156,7 +161,8 @@ button:disabled {
   font-size: 13px;
 }
 
-.category-list {
+.category-list,
+.item-list {
   display: grid;
   gap: 10px;
 }
@@ -178,28 +184,105 @@ button:disabled {
   font-size: 20px;
 }
 
+.add-item-button {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.item-form {
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.form-row {
+  display: grid;
+  gap: 10px;
+}
+
+.two-columns {
+  grid-template-columns: minmax(0, 2fr) minmax(110px, 1fr);
+}
+
+.optional {
+  color: #888;
+  font-weight: 400;
+}
+
+.helper {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.item-card {
+  padding: 14px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.item-card-top {
+  align-items: center;
+}
+
+.item-title {
+  font-size: 16px;
+}
+
+.item-category {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f2f2f2;
+  color: #666;
+  font-size: 12px;
+}
+
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 8px;
+  color: #666;
+  font-size: 13px;
+}
+
+.empty-state {
+  padding: 14px 0;
+  text-align: center;
+}
+
 .muted {
   font-size: 14px;
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 @media (max-width: 480px) {
   body {
     padding: 16px;
+    place-items: start center;
   }
 
   .card {
     padding: 24px 20px;
   }
 
-  .actions {
+  .actions,
+  .two-columns {
     grid-template-columns: 1fr;
   }
 
   .app-header {
     align-items: center;
+  }
+
+  .item-card-top {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
