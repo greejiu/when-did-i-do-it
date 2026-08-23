@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>그거 언제 했더라</title>
-  <link rel="stylesheet" href="./css/style.css?v=11" />
+  <link rel="stylesheet" href="./css/style.css?v=12" />
 </head>
 <body>
   <main>
@@ -128,14 +128,15 @@
   <dialog id="taxonomy-modal" class="taxonomy-modal" aria-labelledby="taxonomy-modal-title">
     <div class="taxonomy-modal-shell">
       <div class="taxonomy-modal-header">
-        <div>
-          <h2 id="taxonomy-modal-title">카테고리·섹션 관리</h2>
-          <p class="muted">이모지는 카테고리 이름에 직접 입력할 수 있어요.</p>
+        <button id="taxonomy-back" class="secondary taxonomy-back hidden" type="button">←</button>
+        <div class="taxonomy-modal-title-area">
+          <h2 id="taxonomy-modal-title">카테고리 관리</h2>
+          <p id="taxonomy-modal-subtitle" class="muted">이모지는 카테고리 이름에 직접 입력할 수 있어요.</p>
         </div>
         <button id="taxonomy-close" class="secondary taxonomy-close" type="button" aria-label="닫기">×</button>
       </div>
 
-      <div class="taxonomy-modal-content">
+      <div id="taxonomy-category-view" class="taxonomy-modal-content">
         <section class="taxonomy-block">
           <div class="taxonomy-heading">
             <h3>카테고리</h3>
@@ -143,16 +144,14 @@
           </div>
           <div id="taxonomy-category-list" class="taxonomy-list"></div>
         </section>
+      </div>
 
+      <div id="taxonomy-section-view" class="taxonomy-modal-content hidden">
         <section class="taxonomy-block">
           <div class="taxonomy-heading">
-            <h3>섹션</h3>
+            <h3 id="taxonomy-section-title">섹션</h3>
             <button id="taxonomy-add-section" class="secondary mini-button" type="button">+ 섹션</button>
           </div>
-          <label class="taxonomy-category-picker">
-            카테고리
-            <select id="taxonomy-section-category"></select>
-          </label>
           <div id="taxonomy-section-list" class="taxonomy-list"></div>
         </section>
       </div>
@@ -161,6 +160,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="./js/auth.js?v=11"></script>
+  <script type="module" src="./js/auth.js?v=12"></script>
 </body>
 </html>
