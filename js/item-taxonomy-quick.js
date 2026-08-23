@@ -1,7 +1,7 @@
 import { supabase } from "./supabase.js";
 import { getCategories } from "./categories.js?v=10";
 import { getSections } from "./sections.js?v=10";
-import { initializeItemsUI } from "./items.js?v=14";
+import { initializeItemsUI } from "./items.js?v=15";
 import { initializeTaxonomyUI } from "./taxonomy.js?v=13";
 
 const categorySelect = document.querySelector("#item-category");
@@ -258,79 +258,91 @@ function wrapField(select, type, onClick) {
   wrap.append(button);
 }
 
-async function addCategoryQuickly() {
+async function addCategoryInline() {
   const userId = await getCurrentUserId();
   if (!userId) return;
 
-  const name = await showInlinePrompt({
+  const value = await showInlinePrompt({
     title: "카테고리 추가",
-    message: "항목 추가를 멈추지 않고 새 카테고리를 만들어요.\n이모지도 이름에 같이 입력할 수 있어요.",
+    message: "이모지도 이름에 같이 입력할 수 있어요.\n예: 🧹 청소",
     placeholder: "예: 🧹 청소",
   });
-  if (name === null || !name) return;
+  if (value === null) return;
+  const name = value.trim();
+  if (!name) return;
 
-  const { data, error } = await supabase
-    .from("categories")
-    .insert({ user_id: userId, name, icon: null })
-    .select("id, name, icon, created_at")
-    .single();
+  const { error } = await supabase.from("categories").insert({
+    user_id: userId,
+    name,
+    icon: null,
+  });
 
   if (error) {
-    const message = error.code === "23505" ? "같은 이름의 카테고리가 이미 있어요." : error.message;
-    await showInlineNotice("추가 실패", message);
+    await showInlineNotice("추가 실패", error.message);
     return;
   }
 
-  await refreshTaxonomyState(userId);
-  categorySelect.value = data.id;
-  categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
+  const { categories } = await refreshTaxonomyState(userId);
+  const created = [...categories].reverse().find((row) => row.name === name);
+  if (created && categorySelect instanceof HTMLSelectElement) {
+    categorySelect.value = created.id;
+    categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
 }
 
-async function addSectionQuickly() {
+async function addSectionInline() {
   const userId = await getCurrentUserId();
   if (!userId) return;
-  if (!(categorySelect instanceof HTMLSelectElement) || !categorySelect.value) {
-    await showInlineNotice("카테고리를 먼저 골라주세요", "섹션은 선택한 카테고리 안에 만들어져요.");
-    return;
-  }
+  if (!(categorySelect instanceof HTMLSelectElement)) return;
 
   const categoryId = categorySelect.value;
-  const categoryName = categorySelect.selectedOptions[0]?.textContent?.trim() || "선택한 카테고리";
-  const name = await showInlinePrompt({
-    title: "섹션 추가",
-    message: `${categoryName}에 새 섹션을 추가해요.`,
-    placeholder: "예: 베란다",
-  });
-  if (name === null || !name) return;
-
-  const sections = await getSections();
-  const maxOrder = sections
-    .filter((section) => section.category_id === categoryId)
-    .reduce((max, section) => Math.max(max, section.sort_order ?? 0), 0);
-
-  const { data, error } = await supabase
-    .from("sections")
-    .insert({
-      user_id: userId,
-      category_id: categoryId,
-      name,
-      sort_order: maxOrder + 10,
-    })
-    .select("id, category_id, name, sort_order, created_at")
-    .single();
-
-  if (error) {
-    const message = error.code === "23505" ? "같은 이름의 섹션이 이미 있어요." : error.message;
-    await showInlineNotice("추가 실패", message);
+  if (!categoryId) {
+    await showInlineNotice("카테고리를 먼저 선택해 주세요", "섹션은 선택한 카테고리 안에 추가돼요.");
     return;
   }
 
-  await refreshTaxonomyState(userId);
-  categorySelect.value = categoryId;
-  categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
-  sectionSelect.value = data.id;
+  const categoryLabel = categorySelect.selectedOptions[0]?.textContent?.trim() || "선택한 카테고리";
+  const value = await showInlinePrompt({
+    title: "섹션 추가",
+    message: `${categoryLabel}에 새 섹션을 추가해요.`,
+    placeholder: "예: 욕실",
+  });
+  if (value === null) return;
+  const name = value.trim();
+  if (!name) return;
+
+  const { sections: currentSections } = await refreshTaxonomyState(userId);
+  const sameCategorySections = currentSections.filter((row) => row.category_id === categoryId);
+  const duplicate = sameCategorySections.some((row) => row.name === name);
+  if (duplicate) {
+    await showInlineNotice("이미 있는 섹션이에요", `${categoryLabel} 안에 같은 이름의 섹션이 있어요.`);
+    return;
+  }
+
+  const maxOrder = sameCategorySections.reduce((max, row) => Math.max(max, row.sort_order ?? 0), 0);
+
+  const { error } = await supabase.from("sections").insert({
+    user_id: userId,
+    category_id: categoryId,
+    name,
+    sort_order: maxOrder + 10,
+  });
+
+  if (error) {
+    await showInlineNotice("추가 실패", error.message);
+    return;
+  }
+
+  const { sections } = await refreshTaxonomyState(userId);
+  const created = [...sections].reverse().find(
+    (row) => row.category_id === categoryId && row.name === name
+  );
+
+  if (created && sectionSelect instanceof HTMLSelectElement) {
+    sectionSelect.value = created.id;
+    sectionSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
 }
 
-ensureStyles();
-wrapField(categorySelect, "카테고리", addCategoryQuickly);
-wrapField(sectionSelect, "섹션", addSectionQuickly);
+wrapField(categorySelect, "카테고리", addCategoryInline);
+wrapField(sectionSelect, "섹션", addSectionInline);
