@@ -21,6 +21,7 @@ const saveButton = document.querySelector("#item-save-button");
 let currentUserId = null;
 let currentCategories = [];
 let currentSections = [];
+let editingItemId = null;
 
 function setMessage(text) {
   itemMessage.textContent = text;
@@ -31,18 +32,29 @@ function setSaving(isSaving) {
   cancelButton.disabled = isSaving;
 }
 
+function setEditingMode(itemId = null) {
+  editingItemId = itemId;
+  saveButton.textContent = itemId ? "수정 저장" : "저장";
+}
+
+function resetFormValues() {
+  itemForm.reset();
+  setEditingMode(null);
+  repeatTypeSelect.value = "daily";
+  updateRepeatFields();
+  fillSectionOptions(itemCategorySelect.value, null, true);
+  setMessage("");
+}
+
 function openForm() {
+  resetFormValues();
   itemForm.classList.remove("hidden");
   addToggleButton.classList.add("hidden");
   itemNameInput.focus();
 }
 
 function closeForm() {
-  itemForm.reset();
-  repeatTypeSelect.value = "daily";
-  updateRepeatFields();
-  fillSectionOptions(itemCategorySelect.value);
-  setMessage("");
+  resetFormValues();
   itemForm.classList.add("hidden");
   addToggleButton.classList.remove("hidden");
 }
@@ -87,6 +99,18 @@ function getRepeatValues() {
   }
 
   return { repeat_unit: null, repeat_interval: null };
+}
+
+function getRepeatTypeForItem(item) {
+  if (!item.repeat_unit || !item.repeat_interval) {
+    return "date_only";
+  }
+
+  if (item.repeat_unit === "day" && item.repeat_interval === 1) return "daily";
+  if (item.repeat_unit === "week" && item.repeat_interval === 1) return "weekly";
+  if (item.repeat_unit === "month" && item.repeat_interval === 1) return "monthly";
+  if (item.repeat_unit === "day") return "n_days";
+  return "custom";
 }
 
 function formatRepeat(item) {
@@ -226,6 +250,55 @@ async function completeItem(item, button) {
   await loadItems();
 }
 
+function openEditForm(item) {
+  setEditingMode(item.id);
+  itemNameInput.value = item.name;
+  itemCategorySelect.value = item.category_id;
+  fillSectionOptions(item.category_id, item.section_id, false);
+
+  const repeatType = getRepeatTypeForItem(item);
+  repeatTypeSelect.value = repeatType;
+  repeatNumberInput.value = String(item.repeat_interval ?? 2);
+  repeatUnitSelect.value = item.repeat_unit ?? "day";
+  nextDueInput.value = item.next_due_override ?? "";
+  updateRepeatFields();
+
+  setMessage("수정할 내용을 바꾼 뒤 저장해 주세요.");
+  itemForm.classList.remove("hidden");
+  addToggleButton.classList.add("hidden");
+  itemForm.scrollIntoView({ behavior: "smooth", block: "start" });
+  itemNameInput.focus();
+}
+
+async function deleteItem(item, button) {
+  const confirmed = window.confirm(
+    `“${item.name}” 항목을 삭제할까요?\n이 항목의 완료 기록도 함께 삭제됩니다.`
+  );
+
+  if (!confirmed) return;
+
+  button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = "삭제 중...";
+
+  const { error } = await supabase
+    .from("items")
+    .delete()
+    .eq("id", item.id)
+    .eq("user_id", currentUserId);
+
+  if (error) {
+    console.error(error);
+    button.disabled = false;
+    button.textContent = originalText;
+    window.alert(`삭제 실패: ${error.message}`);
+    return;
+  }
+
+  if (editingItemId === item.id) closeForm();
+  await loadItems();
+}
+
 function createItemCard(item) {
   const card = document.createElement("article");
   card.className = "item-card";
@@ -272,13 +345,25 @@ function createItemCard(item) {
   const actions = document.createElement("div");
   actions.className = "item-card-actions";
 
+  const editButton = document.createElement("button");
+  editButton.type = "button";
+  editButton.className = "secondary item-action-button edit-button";
+  editButton.textContent = "편집";
+  editButton.addEventListener("click", () => openEditForm(item));
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "secondary item-action-button delete-button";
+  deleteButton.textContent = "삭제";
+  deleteButton.addEventListener("click", () => deleteItem(item, deleteButton));
+
   const completeButton = document.createElement("button");
   completeButton.type = "button";
-  completeButton.className = "primary complete-button";
+  completeButton.className = "primary item-action-button complete-button";
   completeButton.textContent = "완료했어요";
   completeButton.addEventListener("click", () => completeItem(item, completeButton));
 
-  actions.append(completeButton);
+  actions.append(editButton, deleteButton, completeButton);
   card.append(top, meta, actions);
   return card;
 }
@@ -415,7 +500,7 @@ function fillCategoryOptions(categories) {
   }
 }
 
-function fillSectionOptions(categoryId) {
+function fillSectionOptions(categoryId, selectedSectionId = null, useFallback = true) {
   itemSectionSelect.replaceChildren();
   const sections = currentSections.filter((section) => section.category_id === categoryId);
 
@@ -442,8 +527,15 @@ function fillSectionOptions(categoryId) {
     itemSectionSelect.append(option);
   }
 
-  const fallback = sections.find((section) => section.name === "기타");
-  if (fallback) itemSectionSelect.value = fallback.id;
+  if (selectedSectionId && sections.some((section) => section.id === selectedSectionId)) {
+    itemSectionSelect.value = selectedSectionId;
+    return;
+  }
+
+  if (useFallback) {
+    const fallback = sections.find((section) => section.name === "기타");
+    if (fallback) itemSectionSelect.value = fallback.id;
+  }
 }
 
 async function saveItem(event) {
@@ -474,23 +566,39 @@ async function saveItem(event) {
   }
 
   setSaving(true);
-  setMessage("저장 중...");
+  setMessage(editingItemId ? "수정 중..." : "저장 중...");
 
-  const { error } = await supabase.from("items").insert({
-    user_id: currentUserId,
+  const payload = {
     category_id: categoryId,
     section_id: sectionId,
     name,
     repeat_unit: repeat.repeat_unit,
     repeat_interval: repeat.repeat_interval,
     next_due_override: nextDue,
-  });
+  };
+
+  let error;
+
+  if (editingItemId) {
+    const result = await supabase
+      .from("items")
+      .update({ ...payload, updated_at: new Date().toISOString() })
+      .eq("id", editingItemId)
+      .eq("user_id", currentUserId);
+    error = result.error;
+  } else {
+    const result = await supabase.from("items").insert({
+      ...payload,
+      user_id: currentUserId,
+    });
+    error = result.error;
+  }
 
   setSaving(false);
 
   if (error) {
     console.error(error);
-    setMessage(`저장 실패: ${error.message}`);
+    setMessage(`${editingItemId ? "수정" : "저장"} 실패: ${error.message}`);
     return;
   }
 
@@ -504,13 +612,13 @@ export async function initializeItemsUI(userId, categories, sections) {
   currentSections = sections;
 
   fillCategoryOptions(categories);
-  fillSectionOptions(itemCategorySelect.value);
+  fillSectionOptions(itemCategorySelect.value, null, true);
   updateRepeatFields();
 
   addToggleButton.onclick = openForm;
   cancelButton.onclick = closeForm;
   repeatTypeSelect.onchange = updateRepeatFields;
-  itemCategorySelect.onchange = () => fillSectionOptions(itemCategorySelect.value);
+  itemCategorySelect.onchange = () => fillSectionOptions(itemCategorySelect.value, null, true);
   itemForm.onsubmit = saveItem;
 
   try {
@@ -526,6 +634,7 @@ export function resetItemsUI() {
   currentUserId = null;
   currentCategories = [];
   currentSections = [];
+  editingItemId = null;
   itemList.replaceChildren();
   itemStatus.textContent = "";
   closeForm();
