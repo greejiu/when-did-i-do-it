@@ -174,6 +174,17 @@ button.secondary:hover,
   box-shadow: 0 24px 70px rgba(58, 63, 55, 0.18);
 }
 
+.history-modal {
+  overflow: hidden;
+}
+
+.history-modal-shell {
+  box-sizing: border-box;
+  max-height: min(88dvh, 760px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .taxonomy-modal::backdrop,
 .history-modal::backdrop {
   background: rgba(62, 66, 58, 0.34);
@@ -212,10 +223,10 @@ button.secondary:hover,
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   transform: translate(-50%, -50%);
-  border: 1px solid var(--comfort-accent);
+  border: 1px solid #9eaa9a;
   border-radius: 999px;
   background: transparent;
   z-index: -1;
@@ -224,18 +235,20 @@ button.secondary:hover,
 .history-calendar-day.has-record {
   background: transparent;
   border-color: transparent;
-  color: #fffdf8;
+  color: var(--comfort-accent-dark);
 }
 
 .history-calendar-day.has-record::before {
-  width: 30px;
-  height: 30px;
-  border: 0;
-  background: var(--comfort-accent-dark);
+  width: 40px;
+  height: 40px;
+  border: 1px solid #c7d1c3;
+  background: #e5ebe2;
 }
 
 .history-calendar-day.has-record.is-today::before {
-  box-shadow: 0 0 0 2px var(--comfort-sage), 0 0 0 3px var(--comfort-accent-dark);
+  background: #dfe8dc;
+  border-color: #9eaa9a;
+  box-shadow: 0 0 0 2px var(--comfort-sage), 0 0 0 3px #9eaa9a;
 }
 
 .history-calendar-day.is-future {
@@ -263,9 +276,17 @@ button.secondary:hover,
     background: #efede6;
   }
 
-  .history-calendar-day.is-today:not(.has-record)::before,
+  .history-modal-shell {
+    max-height: 92dvh;
+  }
+
+  .history-calendar-day.is-today:not(.has-record)::before {
+    width: 36px;
+    height: 36px;
+  }
+
   .history-calendar-day.has-record::before {
-    width: 28px;
-    height: 28px;
+    width: 38px;
+    height: 38px;
   }
 }
