@@ -1,7 +1,8 @@
 import { supabase } from "./supabase.js";
-import { ensureDefaultCategories, getCategories } from "./categories.js?v=7";
-import { ensureDefaultSections, getSections } from "./sections.js?v=7";
-import { initializeItemsUI, resetItemsUI } from "./items.js?v=8";
+import { ensureDefaultCategories, getCategories } from "./categories.js?v=9";
+import { ensureDefaultSections, getSections } from "./sections.js?v=9";
+import { initializeItemsUI, resetItemsUI } from "./items.js?v=9";
+import { initializeTaxonomyUI, resetTaxonomyUI } from "./taxonomy.js?v=9";
 
 const authSection = document.querySelector("#auth-section");
 const appSection = document.querySelector("#app-section");
@@ -33,6 +34,7 @@ function showLoggedOut() {
   categoryList.replaceChildren();
   categoryStatus.textContent = "";
   resetItemsUI();
+  resetTaxonomyUI();
 }
 
 function showLoggedIn(user) {
@@ -63,18 +65,41 @@ function renderCategories(categories) {
   categoryStatus.textContent = `${categories.length}개`;
 }
 
+async function ensureInitialDefaults(user) {
+  if (user?.user_metadata?.tracker_defaults_seeded === true) return;
+
+  await ensureDefaultCategories(user.id);
+  const categories = await getCategories();
+  await ensureDefaultSections(user.id, categories);
+
+  const { error } = await supabase.auth.updateUser({
+    data: { tracker_defaults_seeded: true },
+  });
+
+  if (error) {
+    console.error("기본 데이터 초기화 표시 저장 실패", error);
+  }
+}
+
+async function loadAppData(user) {
+  const categories = await getCategories();
+  const sections = await getSections();
+
+  renderCategories(categories);
+  await initializeItemsUI(user.id, categories, sections);
+  initializeTaxonomyUI(user.id, categories, sections, async () => {
+    await loadAppData(user);
+  });
+}
+
 async function initializeLoggedInApp(user) {
   if (!user) return;
 
   categoryStatus.textContent = "불러오는 중...";
 
   try {
-    await ensureDefaultCategories(user.id);
-    const categories = await getCategories();
-    await ensureDefaultSections(user.id, categories);
-    const sections = await getSections();
-    renderCategories(categories);
-    await initializeItemsUI(user.id, categories, sections);
+    await ensureInitialDefaults(user);
+    await loadAppData(user);
   } catch (error) {
     console.error(error);
     categoryStatus.textContent = "불러오기 실패";
