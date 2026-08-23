@@ -30,10 +30,16 @@ let quickAddTitle = null;
 let quickAddSubtitle = null;
 let quickAddSlot = null;
 let itemFormPlaceholder = null;
+let bypassMainAddIntercept = false;
 
 function getItemForm() {
   const form = document.querySelector("#item-form");
   return form instanceof HTMLFormElement ? form : null;
+}
+
+function getMainAddButton() {
+  const button = document.querySelector("#item-add-toggle");
+  return button instanceof HTMLButtonElement ? button : null;
 }
 
 function ensureQuickAddModal() {
@@ -46,7 +52,7 @@ function ensureQuickAddModal() {
       <div class="quick-add-modal-header">
         <div>
           <h2 id="quick-add-title">항목 추가</h2>
-          <p id="quick-add-subtitle">카테고리를 미리 고른 상태로 빠르게 추가할 수 있어요.</p>
+          <p id="quick-add-subtitle">카테고리와 섹션을 선택해 새 항목을 추가해요.</p>
         </div>
         <button type="button" class="secondary quick-add-close" aria-label="닫기">×</button>
       </div>
@@ -71,9 +77,12 @@ function ensureQuickAddModal() {
       event.clientY < rect.top ||
       event.clientY > rect.bottom;
 
-    if (isBackdropClick) {
-      closeQuickAddModal();
-    }
+    if (isBackdropClick) closeQuickAddModal();
+  });
+
+  quickAddModal.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeQuickAddModal();
   });
 
   quickAddModal.addEventListener("close", restoreItemForm);
@@ -107,9 +116,7 @@ function closeQuickAddModal() {
     cancelButton.click();
   }
 
-  if (modal.open) {
-    modal.close();
-  }
+  if (modal.open) modal.close();
 }
 
 function watchFormState(form) {
@@ -118,64 +125,108 @@ function watchFormState(form) {
 
   const observer = new MutationObserver(() => {
     if (!quickAddModal?.open) return;
-    if (form.classList.contains("hidden")) {
-      quickAddModal.close();
-    }
+    if (form.classList.contains("hidden")) quickAddModal.close();
   });
 
   observer.observe(form, { attributes: true, attributeFilter: ["class"] });
 }
 
-function openQuickAddForCategory(categoryName) {
+function presentFormInModal({ categoryName = "" } = {}) {
   const modal = ensureQuickAddModal();
   const form = getItemForm();
-  const toggleButton = document.querySelector("#item-add-toggle");
-  const cancelButton = document.querySelector("#item-cancel-button");
-  const categorySelect = document.querySelector("#item-category");
   const nameInput = document.querySelector("#item-name");
+  const categorySelect = document.querySelector("#item-category");
   const message = document.querySelector("#item-message");
 
   if (!form || !(categorySelect instanceof HTMLSelectElement)) return;
-
-  if (!form.classList.contains("hidden") && cancelButton instanceof HTMLButtonElement) {
-    cancelButton.click();
-  }
-
-  if (form.classList.contains("hidden") && toggleButton instanceof HTMLButtonElement) {
-    toggleButton.click();
-  }
 
   ensurePlaceholder(form);
   watchFormState(form);
   quickAddSlot?.append(form);
 
-  if (quickAddTitle) {
-    quickAddTitle.textContent = `${categoryName} 항목 추가`;
+  if (categoryName) {
+    if (quickAddTitle) quickAddTitle.textContent = `${categoryName} 항목 추가`;
+    if (quickAddSubtitle) {
+      quickAddSubtitle.textContent = `${categoryName} 카테고리에 새 항목을 빠르게 추가해요.`;
+    }
+
+    const option = findCategoryOption(categoryName);
+    if (option) {
+      categorySelect.value = option.value;
+      categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    if (message instanceof HTMLElement) {
+      message.textContent = `${categoryName}에 새 항목을 추가해요.`;
+    }
+  } else {
+    if (quickAddTitle) quickAddTitle.textContent = "항목 추가";
+    if (quickAddSubtitle) {
+      quickAddSubtitle.textContent = "카테고리와 섹션을 선택해 새 항목을 추가해요.";
+    }
+    if (message instanceof HTMLElement) message.textContent = "";
   }
 
-  if (quickAddSubtitle) {
-    quickAddSubtitle.textContent = `${categoryName} 카테고리에 새 항목을 빠르게 추가해요.`;
-  }
-
-  const option = findCategoryOption(categoryName);
-  if (option) {
-    categorySelect.value = option.value;
-    categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-
-  if (message instanceof HTMLElement) {
-    message.textContent = `${categoryName}에 새 항목을 추가해요.`;
-  }
-
-  if (!modal.open) {
-    modal.showModal();
-  }
+  if (!modal.open) modal.showModal();
 
   window.setTimeout(() => {
-    if (nameInput instanceof HTMLInputElement) {
-      nameInput.focus();
-    }
+    if (nameInput instanceof HTMLInputElement) nameInput.focus();
   }, 40);
+}
+
+function runOriginalAddButton() {
+  const button = getMainAddButton();
+  if (!button) return false;
+
+  bypassMainAddIntercept = true;
+  button.click();
+  bypassMainAddIntercept = false;
+  return true;
+}
+
+function openGeneralAddModal() {
+  const form = getItemForm();
+  const cancelButton = document.querySelector("#item-cancel-button");
+
+  if (!form) return;
+
+  if (!form.classList.contains("hidden") && cancelButton instanceof HTMLButtonElement) {
+    cancelButton.click();
+  }
+
+  if (form.classList.contains("hidden") && !runOriginalAddButton()) return;
+  presentFormInModal();
+}
+
+function openQuickAddForCategory(categoryName) {
+  const form = getItemForm();
+  const cancelButton = document.querySelector("#item-cancel-button");
+
+  if (!form) return;
+
+  if (!form.classList.contains("hidden") && cancelButton instanceof HTMLButtonElement) {
+    cancelButton.click();
+  }
+
+  if (form.classList.contains("hidden") && !runOriginalAddButton()) return;
+  presentFormInModal({ categoryName });
+}
+
+function attachMainAddPopupBehavior() {
+  const button = getMainAddButton();
+  if (!button || button.dataset.popupBound === "true") return;
+  button.dataset.popupBound = "true";
+
+  button.addEventListener(
+    "click",
+    (event) => {
+      if (bypassMainAddIntercept) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openGeneralAddModal();
+    },
+    true
+  );
 }
 
 function attachQuickAddButton(heading) {
@@ -206,6 +257,8 @@ function enhanceCategoryHeadings(root = document) {
 }
 
 const observer = new MutationObserver((mutations) => {
+  attachMainAddPopupBehavior();
+
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
       if (!(node instanceof HTMLElement)) continue;
@@ -216,4 +269,5 @@ const observer = new MutationObserver((mutations) => {
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
+attachMainAddPopupBehavior();
 enhanceCategoryHeadings();
