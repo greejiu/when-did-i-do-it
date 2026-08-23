@@ -169,7 +169,8 @@ button:disabled {
 .item-category-heading,
 .item-section-heading,
 .taxonomy-heading,
-.taxonomy-row {
+.taxonomy-row,
+.taxonomy-modal-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -219,24 +220,68 @@ button:disabled {
   font-weight: 650;
 }
 
-.taxonomy-panel {
+.taxonomy-modal {
+  width: min(560px, calc(100% - 32px));
+  max-height: min(82vh, 720px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid #c7cfd5;
+  border-radius: 18px;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 24px 70px rgba(20, 28, 35, 0.22);
+}
+
+.taxonomy-modal::backdrop {
+  background: rgba(32, 40, 47, 0.48);
+  backdrop-filter: blur(2px);
+}
+
+.taxonomy-modal-shell {
+  max-height: min(82vh, 720px);
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.taxonomy-modal-header {
+  align-items: flex-start;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #d8dde1;
+}
+
+.taxonomy-modal-header h2 {
+  margin-bottom: 3px;
+}
+
+.taxonomy-modal-header .muted {
+  margin: 0;
+  font-size: 12px;
+}
+
+.taxonomy-close {
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-color: #cbd2d8;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.taxonomy-modal-content {
   display: grid;
-  gap: 18px;
-  margin-top: 14px;
-  padding: 15px;
-  border: 1px solid #c9d1d7;
-  border-radius: 14px;
-  background: #e9edf0;
+  gap: 16px;
 }
 
 .taxonomy-block {
   display: grid;
   gap: 10px;
-}
-
-.taxonomy-block + .taxonomy-block {
-  padding-top: 16px;
-  border-top: 1px solid #cbd2d8;
+  padding: 14px;
+  border: 1px solid #d3d9de;
+  border-radius: 14px;
+  background: #f5f7f8;
 }
 
 .taxonomy-heading {
@@ -482,7 +527,22 @@ button:disabled {
     justify-content: flex-end;
   }
 
+  .taxonomy-modal {
+    width: calc(100% - 16px);
+    max-height: 92vh;
+    border-radius: 16px;
+  }
+
+  .taxonomy-modal-shell {
+    max-height: 92vh;
+    padding: 16px;
+  }
+
   .taxonomy-row {
     align-items: flex-start;
+  }
+
+  .taxonomy-category-picker {
+    max-width: none;
   }
 }
