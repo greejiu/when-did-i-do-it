@@ -4,7 +4,6 @@ const addToggleButton = document.querySelector("#item-add-toggle");
 const itemForm = document.querySelector("#item-form");
 const cancelButton = document.querySelector("#item-cancel-button");
 const itemNameInput = document.querySelector("#item-name");
-const itemIconInput = document.querySelector("#item-icon");
 const itemCategorySelect = document.querySelector("#item-category");
 const itemSectionSelect = document.querySelector("#item-section");
 const repeatTypeSelect = document.querySelector("#repeat-type");
@@ -179,6 +178,21 @@ function getDueStatus(dueDate) {
   return { text: `${Math.abs(difference)}일 지남`, className: "due-overdue" };
 }
 
+function sortItemsByDueDate(items) {
+  return [...items].sort((a, b) => {
+    const dueA = getNextDueDate(a);
+    const dueB = getNextDueDate(b);
+    const timeA = dueA ? toLocalDay(dueA).getTime() : Number.POSITIVE_INFINITY;
+    const timeB = dueB ? toLocalDay(dueB).getTime() : Number.POSITIVE_INFINITY;
+
+    if (timeA !== timeB) return timeA - timeB;
+
+    const createdA = new Date(a.created_at).getTime();
+    const createdB = new Date(b.created_at).getTime();
+    return createdA - createdB;
+  });
+}
+
 async function completeItem(item, button) {
   if (!currentUserId) return;
 
@@ -221,7 +235,7 @@ function createItemCard(item) {
 
   const title = document.createElement("strong");
   title.className = "item-title";
-  title.textContent = `${item.icon || "•"} ${item.name}`;
+  title.textContent = item.name;
   top.append(title);
 
   const meta = document.createElement("div");
@@ -272,6 +286,7 @@ function createItemCard(item) {
 function appendSectionGroup(parent, titleText, items) {
   if (items.length === 0) return;
 
+  const sortedItems = sortItemsByDueDate(items);
   const group = document.createElement("section");
   group.className = "item-section-group";
 
@@ -283,14 +298,14 @@ function appendSectionGroup(parent, titleText, items) {
 
   const count = document.createElement("span");
   count.className = "muted";
-  count.textContent = `${items.length}개`;
+  count.textContent = `${sortedItems.length}개`;
 
   heading.append(title, count);
   group.append(heading);
 
   const cards = document.createElement("div");
   cards.className = "item-section-cards";
-  for (const item of items) cards.append(createItemCard(item));
+  for (const item of sortedItems) cards.append(createItemCard(item));
 
   group.append(cards);
   parent.append(group);
@@ -341,7 +356,7 @@ function renderItems(items) {
     } else {
       const cards = document.createElement("div");
       cards.className = "item-section-cards";
-      for (const item of categoryItems) cards.append(createItemCard(item));
+      for (const item of sortItemsByDueDate(categoryItems)) cards.append(createItemCard(item));
       categoryGroup.append(cards);
     }
 
@@ -356,7 +371,7 @@ async function loadItems() {
 
   const { data: items, error: itemError } = await supabase
     .from("items")
-    .select("id, category_id, section_id, name, icon, repeat_unit, repeat_interval, next_due_override, created_at, categories(name, icon), sections(name, category_id)")
+    .select("id, category_id, section_id, name, repeat_unit, repeat_interval, next_due_override, created_at, categories(name, icon), sections(name, category_id)")
     .order("created_at", { ascending: true });
 
   if (itemError) throw itemError;
@@ -437,7 +452,6 @@ async function saveItem(event) {
   if (!currentUserId) return;
 
   const name = itemNameInput.value.trim();
-  const icon = itemIconInput.value.trim();
   const categoryId = itemCategorySelect.value;
   const sectionId = itemSectionSelect.disabled ? null : itemSectionSelect.value || null;
   const repeatType = repeatTypeSelect.value;
@@ -467,7 +481,6 @@ async function saveItem(event) {
     category_id: categoryId,
     section_id: sectionId,
     name,
-    icon: icon || null,
     repeat_unit: repeat.repeat_unit,
     repeat_interval: repeat.repeat_interval,
     next_due_override: nextDue,
