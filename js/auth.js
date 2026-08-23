@@ -1,5 +1,6 @@
 import { supabase } from "./supabase.js";
 import { ensureDefaultCategories, getCategories } from "./categories.js";
+import { initializeItemsUI, resetItemsUI } from "./items.js";
 
 const authSection = document.querySelector("#auth-section");
 const appSection = document.querySelector("#app-section");
@@ -30,6 +31,7 @@ function showLoggedOut() {
   accountEmail.textContent = "";
   categoryList.replaceChildren();
   categoryStatus.textContent = "";
+  resetItemsUI();
 }
 
 function showLoggedIn(user) {
@@ -69,6 +71,7 @@ async function initializeLoggedInApp(user) {
     await ensureDefaultCategories(user.id);
     const categories = await getCategories();
     renderCategories(categories);
+    await initializeItemsUI(user.id, categories);
   } catch (error) {
     console.error(error);
     categoryStatus.textContent = "불러오기 실패";
