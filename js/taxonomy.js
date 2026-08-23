@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { showConfirm, showPrompt, showNotice } from "./app-dialog.js?v=1";
 
 const toggleButton = document.querySelector("#taxonomy-toggle");
 const modal = document.querySelector("#taxonomy-modal");
@@ -167,7 +168,12 @@ function renderManager() {
 async function addCategory() {
   if (!currentUserId) return;
 
-  const rawName = window.prompt("새 카테고리 이름을 입력해 주세요. 이모지도 같이 입력할 수 있어요.\n예: 🧹 청소");
+  const rawName = await showPrompt({
+    title: "카테고리 추가",
+    message: "이모지도 이름에 같이 입력할 수 있어요.\n예: 🧹 청소",
+    placeholder: "예: 🧹 청소",
+    confirmText: "추가",
+  });
   if (rawName === null) return;
   const name = rawName.trim();
   if (!name) return;
@@ -179,7 +185,7 @@ async function addCategory() {
   });
 
   if (error) {
-    window.alert(`카테고리 추가 실패: ${error.message}`);
+    await showNotice({ title: "추가 실패", message: error.message });
     return;
   }
 
@@ -187,10 +193,12 @@ async function addCategory() {
 }
 
 async function editCategory(category) {
-  const rawName = window.prompt(
-    "카테고리 이름을 수정해 주세요. 이모지도 이름 안에서 바꿀 수 있어요.",
-    category.name
-  );
+  const rawName = await showPrompt({
+    title: "카테고리 수정",
+    message: "이모지도 이름 안에서 바로 바꿀 수 있어요.",
+    value: category.name,
+    confirmText: "저장",
+  });
   if (rawName === null) return;
   const name = rawName.trim();
   if (!name) return;
@@ -202,7 +210,7 @@ async function editCategory(category) {
     .eq("user_id", currentUserId);
 
   if (error) {
-    window.alert(`카테고리 수정 실패: ${error.message}`);
+    await showNotice({ title: "수정 실패", message: error.message });
     return;
   }
 
@@ -216,16 +224,24 @@ async function deleteCategory(category, button) {
     .eq("category_id", category.id);
 
   if (countError) {
-    window.alert(`연결 항목 확인 실패: ${countError.message}`);
+    await showNotice({ title: "확인 실패", message: countError.message });
     return;
   }
 
   if ((count ?? 0) > 0) {
-    window.alert(`이 카테고리에는 관리 항목이 ${count}개 있어요.\n먼저 항목을 다른 카테고리로 옮기거나 삭제해 주세요.`);
+    await showNotice({
+      title: "삭제할 수 없어요",
+      message: `이 카테고리에는 관리 항목이 ${count}개 있어요.\n먼저 항목을 다른 카테고리로 옮기거나 삭제해 주세요.`,
+    });
     return;
   }
 
-  const confirmed = window.confirm(`“${category.name}” 카테고리를 삭제할까요?\n안에 있는 섹션도 함께 삭제됩니다.`);
+  const confirmed = await showConfirm({
+    title: "카테고리 삭제",
+    message: `“${category.name}” 카테고리를 삭제할까요?\n안에 있는 섹션도 함께 삭제돼요.`,
+    confirmText: "삭제",
+    danger: true,
+  });
   if (!confirmed) return;
 
   button.disabled = true;
@@ -237,7 +253,7 @@ async function deleteCategory(category, button) {
 
   if (error) {
     button.disabled = false;
-    window.alert(`카테고리 삭제 실패: ${error.message}`);
+    await showNotice({ title: "삭제 실패", message: error.message });
     return;
   }
 
@@ -249,7 +265,12 @@ async function addSection() {
   const category = getSelectedCategory();
   if (!category) return;
 
-  const rawName = window.prompt(`${category.name}에 추가할 새 섹션 이름을 입력해 주세요.`);
+  const rawName = await showPrompt({
+    title: "섹션 추가",
+    message: `${category.name}에 새 섹션을 추가해요.`,
+    placeholder: "예: 욕실",
+    confirmText: "추가",
+  });
   if (rawName === null) return;
   const name = rawName.trim();
   if (!name) return;
@@ -265,7 +286,7 @@ async function addSection() {
   });
 
   if (error) {
-    window.alert(`섹션 추가 실패: ${error.message}`);
+    await showNotice({ title: "추가 실패", message: error.message });
     return;
   }
 
@@ -273,7 +294,12 @@ async function addSection() {
 }
 
 async function editSection(section) {
-  const rawName = window.prompt("섹션 이름", section.name);
+  const rawName = await showPrompt({
+    title: "섹션 수정",
+    message: "섹션 이름을 바꿔주세요.",
+    value: section.name,
+    confirmText: "저장",
+  });
   if (rawName === null) return;
   const name = rawName.trim();
   if (!name) return;
@@ -285,7 +311,7 @@ async function editSection(section) {
     .eq("user_id", currentUserId);
 
   if (error) {
-    window.alert(`섹션 수정 실패: ${error.message}`);
+    await showNotice({ title: "수정 실패", message: error.message });
     return;
   }
 
@@ -299,16 +325,24 @@ async function deleteSection(section, button) {
     .eq("section_id", section.id);
 
   if (countError) {
-    window.alert(`연결 항목 확인 실패: ${countError.message}`);
+    await showNotice({ title: "확인 실패", message: countError.message });
     return;
   }
 
   if ((count ?? 0) > 0) {
-    window.alert(`이 섹션에는 관리 항목이 ${count}개 있어요.\n먼저 항목의 섹션을 바꾸거나 삭제해 주세요.`);
+    await showNotice({
+      title: "삭제할 수 없어요",
+      message: `이 섹션에는 관리 항목이 ${count}개 있어요.\n먼저 항목의 섹션을 바꾸거나 삭제해 주세요.`,
+    });
     return;
   }
 
-  const confirmed = window.confirm(`“${section.name}” 섹션을 삭제할까요?`);
+  const confirmed = await showConfirm({
+    title: "섹션 삭제",
+    message: `“${section.name}” 섹션을 삭제할까요?`,
+    confirmText: "삭제",
+    danger: true,
+  });
   if (!confirmed) return;
 
   button.disabled = true;
@@ -320,7 +354,7 @@ async function deleteSection(section, button) {
 
   if (error) {
     button.disabled = false;
-    window.alert(`섹션 삭제 실패: ${error.message}`);
+    await showNotice({ title: "삭제 실패", message: error.message });
     return;
   }
 
