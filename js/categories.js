@@ -2,7 +2,6 @@ import { supabase } from "./supabase.js";
 
 const DEFAULT_CATEGORIES = [
   { name: "집안일", icon: "🏠" },
-  { name: "공적인 일 관리", icon: "📋" },
   { name: "반려동물 관리", icon: "🐾" },
 ];
 
