@@ -18,11 +18,17 @@ const itemMessage = document.querySelector("#item-message");
 const itemList = document.querySelector("#item-list");
 const itemStatus = document.querySelector("#item-status");
 const saveButton = document.querySelector("#item-save-button");
+const categoryFilterList = document.querySelector("#category-filter-list");
+const categoryStatus = document.querySelector("#category-status");
+const categoryItemList = document.querySelector("#category-item-list");
+const categoryItemStatus = document.querySelector("#category-item-status");
 
 let currentUserId = null;
 let currentCategories = [];
 let currentSections = [];
+let currentItems = [];
 let editingItemId = null;
+let selectedCategoryId = null;
 
 function setMessage(text) {
   itemMessage.textContent = text;
@@ -252,6 +258,8 @@ async function completeItem(item, button) {
 }
 
 function openEditForm(item) {
+  window.dispatchEvent(new CustomEvent("app:navigate", { detail: { view: "home" } }));
+
   setEditingMode(item.id);
   itemNameInput.value = item.name;
   itemCategorySelect.value = item.category_id;
@@ -267,8 +275,10 @@ function openEditForm(item) {
   setMessage("수정할 내용을 바꾼 뒤 저장해 주세요.");
   itemForm.classList.remove("hidden");
   addToggleButton.classList.add("hidden");
-  itemForm.scrollIntoView({ behavior: "smooth", block: "start" });
-  itemNameInput.focus();
+  setTimeout(() => {
+    itemForm.scrollIntoView({ behavior: "smooth", block: "start" });
+    itemNameInput.focus();
+  }, 0);
 }
 
 async function deleteItem(item, button) {
@@ -403,6 +413,51 @@ function appendSectionGroup(parent, titleText, items) {
   parent.append(group);
 }
 
+function createCategoryGroup(category, categoryItems) {
+  const categoryGroup = document.createElement("section");
+  categoryGroup.className = "item-category-group";
+
+  const categoryHeading = document.createElement("div");
+  categoryHeading.className = "item-category-heading";
+
+  const categoryTitle = document.createElement("h3");
+  categoryTitle.textContent = `${category.icon || ""} ${category.name}`.trim();
+
+  const categoryCount = document.createElement("span");
+  categoryCount.className = "muted";
+  categoryCount.textContent = `${categoryItems.length}개`;
+
+  categoryHeading.append(categoryTitle, categoryCount);
+  categoryGroup.append(categoryHeading);
+
+  if (categoryItems.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "muted empty-state";
+    empty.textContent = "이 카테고리에는 아직 등록한 항목이 없어요.";
+    categoryGroup.append(empty);
+    return categoryGroup;
+  }
+
+  const categorySections = currentSections.filter((section) => section.category_id === category.id);
+
+  if (categorySections.length > 0) {
+    for (const section of categorySections) {
+      const sectionItems = categoryItems.filter((item) => item.section_id === section.id);
+      appendSectionGroup(categoryGroup, section.name, sectionItems);
+    }
+
+    const noSectionItems = categoryItems.filter((item) => !item.section_id);
+    appendSectionGroup(categoryGroup, "기타", noSectionItems);
+  } else {
+    const cards = document.createElement("div");
+    cards.className = "item-section-cards";
+    for (const item of sortItemsByDueDate(categoryItems)) cards.append(createItemCard(item));
+    categoryGroup.append(cards);
+  }
+
+  return categoryGroup;
+}
+
 function renderItems(items) {
   itemList.replaceChildren();
   itemStatus.textContent = `${items.length}개`;
@@ -418,42 +473,55 @@ function renderItems(items) {
   for (const category of currentCategories) {
     const categoryItems = items.filter((item) => item.category_id === category.id);
     if (categoryItems.length === 0) continue;
-
-    const categoryGroup = document.createElement("section");
-    categoryGroup.className = "item-category-group";
-
-    const categoryHeading = document.createElement("div");
-    categoryHeading.className = "item-category-heading";
-
-    const categoryTitle = document.createElement("h3");
-    categoryTitle.textContent = `${category.icon || ""} ${category.name}`.trim();
-
-    const categoryCount = document.createElement("span");
-    categoryCount.className = "muted";
-    categoryCount.textContent = `${categoryItems.length}개`;
-
-    categoryHeading.append(categoryTitle, categoryCount);
-    categoryGroup.append(categoryHeading);
-
-    const categorySections = currentSections.filter((section) => section.category_id === category.id);
-
-    if (categorySections.length > 0) {
-      for (const section of categorySections) {
-        const sectionItems = categoryItems.filter((item) => item.section_id === section.id);
-        appendSectionGroup(categoryGroup, section.name, sectionItems);
-      }
-
-      const noSectionItems = categoryItems.filter((item) => !item.section_id);
-      appendSectionGroup(categoryGroup, "기타", noSectionItems);
-    } else {
-      const cards = document.createElement("div");
-      cards.className = "item-section-cards";
-      for (const item of sortItemsByDueDate(categoryItems)) cards.append(createItemCard(item));
-      categoryGroup.append(cards);
-    }
-
-    itemList.append(categoryGroup);
+    itemList.append(createCategoryGroup(category, categoryItems));
   }
+}
+
+function renderCategorySelector() {
+  categoryFilterList.replaceChildren();
+  categoryStatus.textContent = `${currentCategories.length}개`;
+
+  if (currentCategories.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "muted empty-state";
+    empty.textContent = "카테고리가 없어요.";
+    categoryFilterList.append(empty);
+    selectedCategoryId = null;
+    return;
+  }
+
+  if (!currentCategories.some((category) => category.id === selectedCategoryId)) {
+    selectedCategoryId = currentCategories[0].id;
+  }
+
+  for (const category of currentCategories) {
+    const count = currentItems.filter((item) => item.category_id === category.id).length;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "category-filter-button";
+    button.classList.toggle("is-active", category.id === selectedCategoryId);
+    button.innerHTML = `<span>${category.name}</span><small>${count}개</small>`;
+    button.addEventListener("click", () => {
+      selectedCategoryId = category.id;
+      renderCategorySelector();
+      renderSelectedCategory();
+    });
+    categoryFilterList.append(button);
+  }
+}
+
+function renderSelectedCategory() {
+  categoryItemList.replaceChildren();
+  const category = currentCategories.find((entry) => entry.id === selectedCategoryId);
+
+  if (!category) {
+    categoryItemStatus.textContent = "";
+    return;
+  }
+
+  const categoryItems = currentItems.filter((item) => item.category_id === category.id);
+  categoryItemStatus.textContent = `${categoryItems.length}개`;
+  categoryItemList.append(createCategoryGroup(category, categoryItems));
 }
 
 async function loadItems() {
@@ -488,12 +556,14 @@ async function loadItems() {
     }
   }
 
-  const enrichedItems = rows.map((item) => ({
+  currentItems = rows.map((item) => ({
     ...item,
     latest_completed_at: latestByItem.get(item.id) ?? null,
   }));
 
-  renderItems(enrichedItems);
+  renderItems(currentItems);
+  renderCategorySelector();
+  renderSelectedCategory();
 }
 
 function fillCategoryOptions(categories) {
@@ -634,15 +704,26 @@ export async function initializeItemsUI(userId, categories, sections) {
     console.error(error);
     itemStatus.textContent = "불러오기 실패";
     itemList.textContent = "관리 항목을 불러오지 못했어요.";
+    categoryItemList.textContent = "카테고리 항목을 불러오지 못했어요.";
   }
+}
+
+export async function refreshItemsUI() {
+  await loadItems();
 }
 
 export function resetItemsUI() {
   currentUserId = null;
   currentCategories = [];
   currentSections = [];
+  currentItems = [];
   editingItemId = null;
+  selectedCategoryId = null;
   itemList.replaceChildren();
+  categoryFilterList.replaceChildren();
+  categoryItemList.replaceChildren();
   itemStatus.textContent = "";
+  categoryStatus.textContent = "";
+  categoryItemStatus.textContent = "";
   closeForm();
 }
