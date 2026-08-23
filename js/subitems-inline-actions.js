@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { showConfirm, showPrompt, showNotice } from "./app-dialog.js?v=1";
 
 let quickActionDialog = null;
 let quickActionTitle = null;
@@ -11,19 +12,6 @@ let historyLoadToken = 0;
 const historyModal = document.querySelector("#history-modal");
 const historyTitle = document.querySelector("#history-title");
 const historyRecordCard = historyModal?.querySelector(".history-record-card");
-
-function sleep(ms) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-async function waitFor(getter, attempts = 30, delay = 50) {
-  for (let index = 0; index < attempts; index += 1) {
-    const value = getter();
-    if (value) return value;
-    await sleep(delay);
-  }
-  return null;
-}
 
 function replaceSubitemTerm(value) {
   return String(value || "").replace(/하위\s*항목/g, "하위 할일");
@@ -61,6 +49,139 @@ function renameSubitemTerminology(root = document) {
     button.setAttribute("aria-label", "하위 할일 추가");
     button.title = "하위 할일 추가";
   }
+}
+
+async function getCurrentUserId() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+}
+
+async function findSubitem(itemId, name) {
+  if (!itemId || !name) return null;
+  const { data, error } = await supabase
+    .from("sub_items")
+    .select("id, item_id, name, sort_order")
+    .eq("item_id", itemId)
+    .eq("name", name)
+    .limit(1);
+
+  if (error) {
+    console.error(error);
+    await showNotice({ title: "불러오기 실패", message: "하위 할일 정보를 불러오지 못했어요." });
+    return null;
+  }
+  return data?.[0] ?? null;
+}
+
+function notifySubitemsChanged() {
+  window.dispatchEvent(new CustomEvent("app:subitems-changed"));
+  if (historyModal?.open) window.setTimeout(loadSubitemHistoryList, 100);
+}
+
+async function addSubitemDirect(itemId, itemName = "항목") {
+  if (!itemId) return;
+
+  const name = await showPrompt({
+    title: `${itemName} · 하위 할일 추가`,
+    message: "새 하위 할일 이름을 입력해 주세요.",
+    placeholder: "예: 변기 뚜껑 청소하기",
+    confirmText: "추가",
+  });
+  if (name === null) return;
+
+  const cleanName = name.trim();
+  if (!cleanName) {
+    await showNotice({ title: "입력 확인", message: "하위 할일 이름을 입력해 주세요." });
+    return;
+  }
+
+  const userId = await getCurrentUserId();
+  if (!userId) return;
+
+  const { data: lastRows, error: orderError } = await supabase
+    .from("sub_items")
+    .select("sort_order")
+    .eq("item_id", itemId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+
+  if (orderError) {
+    console.error(orderError);
+    await showNotice({ title: "추가 실패", message: "하위 할일 순서를 확인하지 못했어요." });
+    return;
+  }
+
+  const maxOrder = lastRows?.[0]?.sort_order ?? 0;
+  const { error } = await supabase.from("sub_items").insert({
+    user_id: userId,
+    item_id: itemId,
+    name: cleanName,
+    sort_order: maxOrder + 10,
+  });
+
+  if (error) {
+    await showNotice({
+      title: "추가 실패",
+      message: error.code === "23505" ? "같은 이름의 하위 할일이 이미 있어요." : error.message,
+    });
+    return;
+  }
+
+  notifySubitemsChanged();
+}
+
+async function editSubitemDirect(itemId, subitemName) {
+  const subitem = await findSubitem(itemId, subitemName);
+  if (!subitem) return;
+
+  const name = await showPrompt({
+    title: "하위 할일 수정",
+    message: "이름을 수정해 주세요.",
+    value: subitem.name,
+    confirmText: "저장",
+  });
+  if (name === null) return;
+
+  const cleanName = name.trim();
+  if (!cleanName || cleanName === subitem.name) return;
+
+  const { error } = await supabase
+    .from("sub_items")
+    .update({ name: cleanName, updated_at: new Date().toISOString() })
+    .eq("id", subitem.id);
+
+  if (error) {
+    await showNotice({
+      title: "수정 실패",
+      message: error.code === "23505" ? "같은 이름의 하위 할일이 이미 있어요." : error.message,
+    });
+    return;
+  }
+
+  notifySubitemsChanged();
+}
+
+async function deleteSubitemDirect(itemId, subitemName) {
+  const subitem = await findSubitem(itemId, subitemName);
+  if (!subitem) return;
+
+  const confirmed = await showConfirm({
+    title: "하위 할일 삭제",
+    message: `“${subitem.name}”을 삭제할까요?\n이 하위 할일의 지난 기록도 함께 삭제돼요.`,
+    confirmText: "삭제",
+    danger: true,
+  });
+  if (!confirmed) return;
+
+  const { error } = await supabase.from("sub_items").delete().eq("id", subitem.id);
+  if (error) {
+    await showNotice({ title: "삭제 실패", message: error.message });
+    return;
+  }
+
+  notifySubitemsChanged();
 }
 
 function ensureQuickActionDialog() {
@@ -111,10 +232,14 @@ function ensureQuickActionDialog() {
 
     const card = activeCard;
     const subitemName = activeSubitemName;
+    const itemId = card instanceof HTMLElement ? card.dataset.itemId : null;
     quickActionDialog.close();
 
-    if (!(card instanceof HTMLElement) || !subitemName) return;
-    await openManagerAndTrigger(card, subitemName, action === "edit" ? "수정" : "삭제");
+    if (!itemId || !subitemName) return;
+    window.setTimeout(() => {
+      if (action === "edit") editSubitemDirect(itemId, subitemName);
+      else if (action === "delete") deleteSubitemDirect(itemId, subitemName);
+    }, 0);
   });
 
   quickActionDialog.addEventListener("close", () => {
@@ -133,53 +258,6 @@ function openQuickAction(card, subitemName) {
   if (!dialog.open) dialog.showModal();
 }
 
-async function openExistingManager(card) {
-  if (!(card instanceof HTMLElement)) return null;
-
-  card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-
-  const manageButton = await waitFor(() => {
-    const dialog = document.querySelector(".item-action-dialog[open]");
-    return dialog?.querySelector("[data-subitem-manage]") ?? null;
-  });
-
-  if (!(manageButton instanceof HTMLButtonElement)) {
-    const actionDialog = document.querySelector(".item-action-dialog[open]");
-    if (actionDialog instanceof HTMLDialogElement) actionDialog.close();
-    return null;
-  }
-
-  manageButton.click();
-
-  const manager = await waitFor(() => {
-    const dialog = document.querySelector(".subitem-manager-dialog[open]");
-    return dialog instanceof HTMLDialogElement ? dialog : null;
-  });
-
-  if (manager) renameSubitemTerminology(manager);
-  return manager;
-}
-
-async function openManagerAndTrigger(card, subitemName, actionText) {
-  const manager = await openExistingManager(card);
-  if (!(manager instanceof HTMLDialogElement)) return;
-
-  const targetRow = await waitFor(() => {
-    return [...manager.querySelectorAll(".subitem-manager-row")].find((row) => {
-      const name = row.querySelector(".subitem-manager-name")?.textContent?.trim();
-      return name === subitemName;
-    }) ?? null;
-  });
-
-  if (!(targetRow instanceof HTMLElement)) return;
-
-  const actionButton = [...targetRow.querySelectorAll(".subitem-manager-row-actions button")].find(
-    (button) => button.textContent?.trim() === actionText
-  );
-
-  if (actionButton instanceof HTMLButtonElement) actionButton.click();
-}
-
 function decorateProgress(progress) {
   if (!(progress instanceof HTMLElement)) return;
   const card = progress.closest(".item-card[data-item-id]");
@@ -196,19 +274,19 @@ function decorateProgress(progress) {
       spans[1].classList.add("subitem-inline-count");
     }
 
-    const manageButton = document.createElement("button");
-    manageButton.type = "button";
-    manageButton.className = "subitem-inline-manage-button";
-    manageButton.textContent = "+";
-    manageButton.setAttribute("aria-label", "하위 할일 추가");
-    manageButton.title = "하위 할일 추가";
-    manageButton.addEventListener("click", async (event) => {
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "subitem-inline-manage-button";
+    addButton.textContent = "+";
+    addButton.setAttribute("aria-label", "하위 할일 추가");
+    addButton.title = "하위 할일 추가";
+    addButton.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      await openExistingManager(card);
+      addSubitemDirect(card.dataset.itemId, card.querySelector(".item-title")?.textContent?.trim() || "항목");
     });
 
-    heading.append(manageButton);
+    heading.append(addButton);
   }
 
   for (const row of progress.querySelectorAll(".subitem-check-row")) {
@@ -375,6 +453,25 @@ function trackItemFromClick(event) {
 }
 
 document.addEventListener("click", trackItemFromClick, true);
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const addButton = target?.closest("[data-subitem-manage]");
+    if (!(addButton instanceof HTMLButtonElement)) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const actionDialog = addButton.closest("dialog");
+    if (actionDialog?.open) actionDialog.close();
+
+    const itemId = lastItemId;
+    const itemName = lastItemName || "항목";
+    window.setTimeout(() => addSubitemDirect(itemId, itemName), 0);
+  },
+  true
+);
 
 ensureQuickActionDialog();
 ensureSubitemHistoryBlock();
