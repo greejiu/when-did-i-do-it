@@ -38,7 +38,7 @@ function renderSectionCategoryOptions() {
   for (const category of currentCategories) {
     const option = document.createElement("option");
     option.value = category.id;
-    option.textContent = `${category.icon || ""} ${category.name}`.trim();
+    option.textContent = category.name;
     sectionCategorySelect.append(option);
   }
 
@@ -67,7 +67,7 @@ function renderCategoryRows() {
 
     const name = document.createElement("span");
     name.className = "taxonomy-name";
-    name.textContent = `${category.icon || ""} ${category.name}`.trim();
+    name.textContent = category.name;
 
     const actions = document.createElement("div");
     actions.className = "taxonomy-row-actions";
@@ -137,19 +137,15 @@ function renderManager() {
 async function addCategory() {
   if (!currentUserId) return;
 
-  const rawName = window.prompt("새 카테고리 이름을 입력해 주세요.");
+  const rawName = window.prompt("새 카테고리 이름을 입력해 주세요. 이모지도 같이 입력할 수 있어요.\n예: 🧹 청소");
   if (rawName === null) return;
   const name = rawName.trim();
   if (!name) return;
 
-  const rawIcon = window.prompt("카테고리 아이콘을 입력해 주세요. 비워도 돼요.", "");
-  if (rawIcon === null) return;
-  const icon = rawIcon.trim() || null;
-
   const { error } = await supabase.from("categories").insert({
     user_id: currentUserId,
     name,
-    icon,
+    icon: null,
   });
 
   if (error) {
@@ -161,18 +157,17 @@ async function addCategory() {
 }
 
 async function editCategory(category) {
-  const rawName = window.prompt("카테고리 이름", category.name);
+  const rawName = window.prompt(
+    "카테고리 이름을 수정해 주세요. 이모지도 이름 안에서 바꿀 수 있어요.",
+    category.name
+  );
   if (rawName === null) return;
   const name = rawName.trim();
   if (!name) return;
 
-  const rawIcon = window.prompt("카테고리 아이콘 (비워도 돼요)", category.icon || "");
-  if (rawIcon === null) return;
-  const icon = rawIcon.trim() || null;
-
   const { error } = await supabase
     .from("categories")
-    .update({ name, icon })
+    .update({ name, icon: null })
     .eq("id", category.id)
     .eq("user_id", currentUserId);
 
