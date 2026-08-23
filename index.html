@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>그거 언제 했더라</title>
-  <link rel="stylesheet" href="./css/style.css?v=8" />
+  <link rel="stylesheet" href="./css/style.css?v=9" />
 </head>
 <body>
   <main>
@@ -44,9 +44,36 @@
       <section>
         <div class="section-heading">
           <h2>카테고리</h2>
-          <span id="category-status" class="muted">불러오는 중...</span>
+          <div class="heading-tools">
+            <span id="category-status" class="muted">불러오는 중...</span>
+            <button id="taxonomy-toggle" class="secondary mini-button" type="button">관리</button>
+          </div>
         </div>
         <div id="category-list" class="category-list" aria-live="polite"></div>
+
+        <section id="taxonomy-panel" class="taxonomy-panel hidden">
+          <div class="taxonomy-block">
+            <div class="taxonomy-heading">
+              <h3>카테고리 관리</h3>
+              <button id="taxonomy-add-category" class="secondary mini-button" type="button">+ 카테고리</button>
+            </div>
+            <div id="taxonomy-category-list" class="taxonomy-list"></div>
+          </div>
+
+          <div class="taxonomy-block">
+            <div class="taxonomy-heading">
+              <h3>섹션 관리</h3>
+              <button id="taxonomy-add-section" class="secondary mini-button" type="button">+ 섹션</button>
+            </div>
+            <label class="taxonomy-category-picker">
+              카테고리
+              <select id="taxonomy-section-category"></select>
+            </label>
+            <div id="taxonomy-section-list" class="taxonomy-list"></div>
+          </div>
+
+          <p id="taxonomy-message" class="message" aria-live="polite"></p>
+        </section>
       </section>
 
       <section>
@@ -122,6 +149,6 @@
     </section>
   </main>
 
-  <script type="module" src="./js/auth.js?v=8"></script>
+  <script type="module" src="./js/auth.js?v=9"></script>
 </body>
 </html>
