@@ -1,7 +1,7 @@
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #222;
-  background: #f5f5f5;
+  background: #e9edf0;
 }
 
 * {
@@ -14,18 +14,19 @@ body {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: #f5f5f5;
+  background: #e9edf0;
 }
 
 main {
-  width: min(640px, 100%);
+  width: min(680px, 100%);
 }
 
 .card {
   padding: 30px;
   background: #fff;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #cfd6dc;
   border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(30, 40, 50, 0.06);
 }
 
 h1,
@@ -60,7 +61,7 @@ h4 {
 .account-email,
 .muted,
 .helper {
-  color: #666;
+  color: #687078;
   line-height: 1.6;
 }
 
@@ -84,7 +85,7 @@ input,
 select {
   width: 100%;
   padding: 12px 13px;
-  border: 1px solid #d8d8d8;
+  border: 1px solid #cbd2d8;
   border-radius: 10px;
   font: inherit;
   background: #fff;
@@ -93,13 +94,13 @@ select {
 
 input:focus,
 select:focus {
-  outline: 2px solid #333;
+  outline: 2px solid #444;
   outline-offset: 1px;
 }
 
 select:disabled {
-  background: #f3f3f3;
-  color: #888;
+  background: #eef1f3;
+  color: #8a9299;
 }
 
 .actions {
@@ -148,7 +149,14 @@ button:disabled {
 
 .app-card {
   display: grid;
-  gap: 28px;
+  gap: 22px;
+}
+
+.app-card > section {
+  padding: 18px;
+  border: 1px solid #d3d9de;
+  border-radius: 16px;
+  background: #f5f7f8;
 }
 
 .app-card p {
@@ -175,7 +183,7 @@ button:disabled {
 
 .section-heading {
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .section-heading .muted {
@@ -192,7 +200,7 @@ button:disabled {
   width: auto;
   min-height: 30px;
   padding: 5px 9px;
-  border-color: #d5d5d5;
+  border-color: #c5cdd3;
   font-size: 12px;
 }
 
@@ -203,30 +211,22 @@ button:disabled {
 }
 
 .category-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   min-height: 48px;
-  padding: 12px 14px;
-  border: 1px solid #e5e5e5;
+  padding: 13px 15px;
+  border: 1px solid #cbd2d8;
   border-radius: 12px;
-  background: #fafafa;
-}
-
-.category-icon {
-  width: 28px;
-  text-align: center;
-  font-size: 20px;
+  background: #fff;
+  font-weight: 650;
 }
 
 .taxonomy-panel {
   display: grid;
   gap: 18px;
-  margin-top: 12px;
-  padding: 14px;
-  border: 1px solid #dedede;
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid #c9d1d7;
   border-radius: 14px;
-  background: #fafafa;
+  background: #e9edf0;
 }
 
 .taxonomy-block {
@@ -236,7 +236,7 @@ button:disabled {
 
 .taxonomy-block + .taxonomy-block {
   padding-top: 16px;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid #cbd2d8;
 }
 
 .taxonomy-heading {
@@ -256,7 +256,7 @@ button:disabled {
   align-items: center;
   min-height: 42px;
   padding: 8px 10px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #cbd2d8;
   border-radius: 10px;
   background: #fff;
 }
@@ -277,8 +277,8 @@ button:disabled {
   width: auto;
   min-height: 28px;
   padding: 4px 8px;
-  border-color: #d5d5d5;
-  color: #666;
+  border-color: #c9d0d5;
+  color: #616970;
   font-size: 11px;
 }
 
@@ -309,9 +309,9 @@ button:disabled {
 .item-form {
   margin-bottom: 14px;
   padding: 16px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #c9d0d5;
   border-radius: 14px;
-  background: #fafafa;
+  background: #fff;
 }
 
 .form-row {
@@ -324,7 +324,7 @@ button:disabled {
 }
 
 .optional {
-  color: #888;
+  color: #8a9299;
   font-weight: 400;
 }
 
@@ -338,29 +338,36 @@ button:disabled {
 }
 
 .item-category-group {
-  padding: 14px;
-  border: 1px solid #dedede;
+  padding: 15px;
+  border: 1px solid #c4ccd2;
   border-radius: 14px;
-  background: #fafafa;
+  background: #e8ecef;
 }
 
 .item-category-heading {
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #c7ced4;
+}
+
+.item-section-group {
+  padding-left: 11px;
+  border-left: 3px solid #bcc5cc;
 }
 
 .item-section-group + .item-section-group {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .item-section-heading {
   align-items: center;
-  margin-bottom: 7px;
+  margin-bottom: 8px;
   padding: 0 2px;
 }
 
 .item-section-heading h4 {
-  color: #555;
+  color: #4f5961;
 }
 
 .item-section-cards {
@@ -370,9 +377,10 @@ button:disabled {
 
 .item-card {
   padding: 12px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #cbd2d8;
   border-radius: 12px;
   background: #fff;
+  box-shadow: 0 1px 2px rgba(30, 40, 50, 0.04);
 }
 
 .item-card-top {
@@ -389,7 +397,7 @@ button:disabled {
   align-items: center;
   gap: 8px 12px;
   margin-top: 8px;
-  color: #666;
+  color: #687078;
   font-size: 13px;
 }
 
@@ -420,8 +428,8 @@ button:disabled {
 
 .edit-button,
 .delete-button {
-  border-color: #d5d5d5;
-  color: #666;
+  border-color: #cbd2d8;
+  color: #616970;
 }
 
 .complete-button {
@@ -443,12 +451,16 @@ button:disabled {
 
 @media (max-width: 480px) {
   body {
-    padding: 16px;
+    padding: 14px;
     place-items: start center;
   }
 
   .card {
-    padding: 24px 20px;
+    padding: 22px 16px;
+  }
+
+  .app-card > section {
+    padding: 14px;
   }
 
   .actions,
