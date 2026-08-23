@@ -6,6 +6,7 @@
   <title>그거 언제 했더라</title>
   <link rel="stylesheet" href="./css/style.css?v=12" />
   <link rel="stylesheet" href="./css/section-overrides.css?v=1" />
+  <link rel="stylesheet" href="./css/history.css?v=1" />
 </head>
 <body>
   <main>
@@ -161,6 +162,48 @@
     </div>
   </dialog>
 
-  <script type="module" src="./js/auth.js?v=12"></script>
+  <dialog id="history-modal" class="history-modal" aria-labelledby="history-title">
+    <div class="history-modal-shell">
+      <div class="history-modal-header">
+        <div>
+          <h2 id="history-title">완료 기록</h2>
+          <p id="history-subtitle" class="muted"></p>
+        </div>
+        <button id="history-close" class="secondary history-close" type="button" aria-label="닫기">×</button>
+      </div>
+
+      <section class="history-calendar-card">
+        <div class="history-calendar-toolbar">
+          <button id="history-prev-month" class="secondary history-month-button" type="button" aria-label="이전 달">‹</button>
+          <strong id="history-month-label"></strong>
+          <button id="history-next-month" class="secondary history-month-button" type="button" aria-label="다음 달">›</button>
+        </div>
+
+        <div class="history-weekdays" aria-hidden="true">
+          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div id="history-calendar-grid" class="history-calendar-grid"></div>
+
+        <form id="history-add-form" class="history-add-form">
+          <label>
+            완료 날짜
+            <input id="history-date" type="date" required />
+          </label>
+          <button id="history-add-button" class="primary history-add-button" type="submit">+ 기록 추가</button>
+        </form>
+        <p id="history-message" class="message" aria-live="polite"></p>
+      </section>
+
+      <section class="history-record-card">
+        <div class="history-record-heading">
+          <h3>완료 기록</h3>
+          <span id="history-record-count" class="muted"></span>
+        </div>
+        <div id="history-record-list" class="history-record-list" aria-live="polite"></div>
+      </section>
+    </div>
+  </dialog>
+
+  <script type="module" src="./js/auth.js?v=13"></script>
 </body>
 </html>
