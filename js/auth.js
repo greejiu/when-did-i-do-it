@@ -26,210 +26,245 @@ function setLoading(isLoading) {
   loginButton.disabled = isLoading;
   signupButton.disabled = isLoading;
   logoutButton.disabled = isLoading;
-  loginButton.textContent = isLoading ? "처리 중..." : "로그인";
 }
 
-function setMessage(text, type = "") {
+function showMessage(text) {
   message.textContent = text;
-  message.dataset.type = type;
 }
 
-function showAuth() {
-  authSection.classList.remove("hidden");
-  appSection.classList.add("hidden");
-}
+function getFriendlyAuthError(error, action) {
+  const code = error?.code ?? "";
+  const text = String(error?.message ?? "").toLowerCase();
 
-function showApp() {
-  authSection.classList.add("hidden");
-  appSection.classList.remove("hidden");
-}
-
-function getErrorMessage(error) {
-  const text = error?.message || "";
-  const status = error?.status;
-
-  if (text.includes("Email not confirmed") || text.includes("email_not_confirmed")) {
-    return "이메일 인증이 아직 안 됐어요. 메일함에서 인증 링크를 눌러주세요.";
+  if (code === "email_not_confirmed" || text.includes("email not confirmed")) {
+    return "이메일 인증이 아직 안 됐어요. 받은 인증 메일의 링크를 먼저 눌러 주세요.";
   }
 
-  if (text.includes("Invalid login credentials") || text.includes("invalid_credentials")) {
+  if (code === "over_email_send_rate_limit" || text.includes("rate limit")) {
+    return "인증 메일 발송 횟수를 초과했어요. 이미 받은 인증 메일을 확인하거나 잠시 후 다시 시도해 주세요.";
+  }
+
+  if (code === "invalid_credentials" || text.includes("invalid login credentials")) {
     return "이메일 또는 비밀번호를 확인해 주세요.";
   }
 
-  if (status === 429 || text.includes("rate limit") || text.includes("security purposes")) {
-    return "인증 메일 발송 횟수를 초과했어요. 이미 받은 메일을 먼저 확인해 주세요.";
-  }
-
-  if (text.includes("User already registered")) {
-    return "이미 가입한 이메일이에요. 로그인하거나 메일 인증을 확인해 주세요.";
-  }
-
-  return text || "요청을 처리하지 못했어요.";
+  return `${action}에 실패했어요. 잠시 후 다시 시도해 주세요.`;
 }
 
-function setActiveView(viewName) {
-  appViews.forEach((view) => {
+async function switchView(viewName) {
+  for (const view of appViews) {
     view.classList.toggle("hidden", view.dataset.appView !== viewName);
-  });
+  }
 
-  navButtons.forEach((button) => {
+  for (const button of navButtons) {
     const active = button.dataset.navView === viewName;
     button.classList.toggle("is-active", active);
-    if (active) button.setAttribute("aria-current", "page");
-    else button.removeAttribute("aria-current");
+    if (active) {
+      button.setAttribute("aria-current", "page");
+    } else {
+      button.removeAttribute("aria-current");
+    }
+  }
+
+  if (viewName === "records") {
+    await refreshRecordsUI();
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetInitializationState() {
+  initializedUserId = null;
+  initializingUserId = null;
+  initializationPromise = null;
+}
+
+function showLoggedOut() {
+  authSection.classList.remove("hidden");
+  appSection.classList.add("hidden");
+  accountEmail.textContent = "";
+  resetInitializationState();
+  resetItemsUI();
+  resetTaxonomyUI();
+  resetRecordsUI();
+  switchView("home");
+}
+
+function showLoggedIn(user) {
+  authSection.classList.add("hidden");
+  appSection.classList.remove("hidden");
+  accountEmail.textContent = user?.email ?? "로그인됨";
+  showMessage("");
+  switchView("home");
+}
+
+async function ensureInitialDefaults(user) {
+  if (user?.user_metadata?.tracker_defaults_seeded === true) return;
+
+  await ensureDefaultCategories(user.id);
+  const categories = await getCategories();
+  await ensureDefaultSections(user.id, categories);
+
+  const { error } = await supabase.auth.updateUser({
+    data: { tracker_defaults_seeded: true },
+  });
+
+  if (error) {
+    console.error("기본 데이터 초기화 표시 저장 실패", error);
+  }
+}
+
+async function loadAppData(user) {
+  const categories = await getCategories();
+  const sections = await getSections();
+
+  await initializeItemsUI(user.id, categories, sections);
+  await initializeRecordsUI(user.id, refreshItemsUI);
+  initializeTaxonomyUI(user.id, categories, sections, async () => {
+    await loadAppData(user);
   });
 }
 
-navButtons.forEach((button) => {
-  button.addEventListener("click", () => setActiveView(button.dataset.navView || "home"));
-});
-
-async function bootstrapUser(user) {
+async function initializeLoggedInApp(user) {
   if (!user) return;
-  if (initializedUserId === user.id) {
-    showApp();
-    accountEmail.textContent = user.email ?? "";
-    return;
-  }
+  if (initializedUserId === user.id) return;
 
-  if (initializingUserId === user.id && initializationPromise) {
-    await initializationPromise;
-    showApp();
-    accountEmail.textContent = user.email ?? "";
-    return;
+  if (initializationPromise && initializingUserId === user.id) {
+    return initializationPromise;
   }
 
   initializingUserId = user.id;
   initializationPromise = (async () => {
-    await ensureDefaultCategories(user.id);
-    const categories = await getCategories();
-    await ensureDefaultSections(user.id, categories);
-    const sections = await getSections();
-
-    await initializeItemsUI(user.id, categories, sections);
-    initializeTaxonomyUI(user.id, categories, sections, async () => {
-      const latestCategories = await getCategories();
-      const latestSections = await getSections();
-      await initializeItemsUI(user.id, latestCategories, latestSections);
-      initializeTaxonomyUI(user.id, latestCategories, latestSections, async () => {
-        const againCategories = await getCategories();
-        const againSections = await getSections();
-        await initializeItemsUI(user.id, againCategories, againSections);
-      });
-      await refreshRecordsUI();
-    });
-    await initializeRecordsUI(user.id);
-    accountEmail.textContent = user.email ?? "";
-    initializedUserId = user.id;
+    try {
+      await ensureInitialDefaults(user);
+      await loadAppData(user);
+      initializedUserId = user.id;
+    } catch (error) {
+      console.error(error);
+      showMessage("앱 데이터를 불러오지 못했어요. 잠시 후 새로고침해 주세요.");
+    } finally {
+      if (initializingUserId === user.id) {
+        initializingUserId = null;
+        initializationPromise = null;
+      }
+    }
   })();
 
-  try {
-    await initializationPromise;
-    showApp();
-    setActiveView("home");
-    setMessage("");
-  } finally {
-    initializingUserId = null;
-    initializationPromise = null;
-  }
+  return initializationPromise;
 }
 
-async function restoreSession() {
+async function refreshSessionUI() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (session?.user) {
-    await bootstrapUser(session.user);
+    showLoggedIn(session.user);
+    await initializeLoggedInApp(session.user);
   } else {
-    showAuth();
+    showLoggedOut();
   }
 }
 
-authForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  setLoading(true);
-  setMessage("");
-
+async function login() {
   const email = emailInput.value.trim();
   const password = passwordInput.value;
 
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    if (data.user) await bootstrapUser(data.user);
-  } catch (error) {
-    setMessage(getErrorMessage(error), "error");
-  } finally {
-    setLoading(false);
+  if (!email || !password) {
+    showMessage("이메일과 비밀번호를 모두 입력해 주세요.");
+    return;
   }
+
+  setLoading(true);
+  showMessage("로그인 중...");
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  setLoading(false);
+
+  if (error) {
+    showMessage(getFriendlyAuthError(error, "로그인"));
+    return;
+  }
+
+  showLoggedIn(data.user);
+  await initializeLoggedInApp(data.user);
+}
+
+async function signup() {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!email || !password) {
+    showMessage("이메일과 비밀번호를 모두 입력해 주세요.");
+    return;
+  }
+
+  if (password.length < 6) {
+    showMessage("비밀번호는 6자 이상으로 입력해 주세요.");
+    return;
+  }
+
+  setLoading(true);
+  showMessage("계정을 만드는 중...");
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: "https://greejiu.github.io/when-did-i-do-it/",
+    },
+  });
+
+  setLoading(false);
+
+  if (error) {
+    showMessage(getFriendlyAuthError(error, "회원가입"));
+    return;
+  }
+
+  if (data.session?.user) {
+    showLoggedIn(data.session.user);
+    await initializeLoggedInApp(data.user);
+    return;
+  }
+
+  showMessage("회원가입 요청 완료! 받은 이메일의 인증 링크를 한 번만 눌러 주세요.");
+}
+
+authForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  login();
 });
 
-signupButton.addEventListener("click", async () => {
-  setLoading(true);
-  setMessage("");
+signupButton.addEventListener("click", signup);
 
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
+for (const button of navButtons) {
+  button.addEventListener("click", () => switchView(button.dataset.navView));
+}
 
-  try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.href,
-      },
-    });
-    if (error) throw error;
-
-    if (data.session?.user) {
-      await bootstrapUser(data.session.user);
-      setMessage("회원가입이 완료됐어요.");
-    } else {
-      setMessage("회원가입이 되었어요. 메일함에서 인증 링크를 눌러주세요.");
-    }
-  } catch (error) {
-    setMessage(getErrorMessage(error), "error");
-  } finally {
-    setLoading(false);
-  }
+window.addEventListener("app:navigate", (event) => {
+  const view = event.detail?.view;
+  if (view) switchView(view);
 });
 
 logoutButton.addEventListener("click", async () => {
   setLoading(true);
-  setMessage("");
-
-  try {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-
-    initializedUserId = null;
-    initializingUserId = null;
-    initializationPromise = null;
-    resetItemsUI();
-    resetTaxonomyUI();
-    resetRecordsUI();
-    showAuth();
-    authForm.reset();
-  } catch (error) {
-    setMessage(getErrorMessage(error), "error");
-  } finally {
-    setLoading(false);
-  }
+  await supabase.auth.signOut();
+  setLoading(false);
+  showLoggedOut();
+  showMessage("로그아웃했어요.");
 });
 
-supabase.auth.onAuthStateChange(async (_event, session) => {
+supabase.auth.onAuthStateChange((_event, session) => {
   if (session?.user) {
-    await bootstrapUser(session.user);
+    showLoggedIn(session.user);
+    setTimeout(() => {
+      initializeLoggedInApp(session.user);
+    }, 0);
   } else {
-    initializedUserId = null;
-    initializingUserId = null;
-    initializationPromise = null;
-    resetItemsUI();
-    resetTaxonomyUI();
-    resetRecordsUI();
-    showAuth();
+    showLoggedOut();
   }
 });
 
-restoreSession();
+refreshSessionUI();
