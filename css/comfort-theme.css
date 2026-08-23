@@ -196,18 +196,46 @@ button.secondary:hover,
 }
 
 .history-calendar-day:hover:not(:disabled) {
-  background: #fffefa;
-  border-color: #cdd6cb;
+  background: transparent;
+  border-color: transparent;
+  color: var(--comfort-accent-dark);
 }
 
 .history-calendar-day.is-today {
-  border-color: var(--comfort-accent);
-  background: #f5f8f3;
+  background: transparent;
+  border-color: transparent;
+  font-weight: 700;
+}
+
+.history-calendar-day.is-today:not(.has-record)::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--comfort-accent);
+  border-radius: 999px;
+  background: transparent;
+  z-index: -1;
 }
 
 .history-calendar-day.has-record {
-  background: #fffefa;
-  border-color: #b9c6b7;
+  background: transparent;
+  border-color: transparent;
+  color: #fffdf8;
+}
+
+.history-calendar-day.has-record::before {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: var(--comfort-accent-dark);
+}
+
+.history-calendar-day.has-record.is-today::before {
+  box-shadow: 0 0 0 2px var(--comfort-sage), 0 0 0 3px var(--comfort-accent-dark);
 }
 
 .history-calendar-day.is-future {
@@ -215,7 +243,7 @@ button.secondary:hover,
 }
 
 .history-calendar-dot {
-  background: var(--comfort-accent-dark);
+  display: none;
 }
 
 .record-item-button {
@@ -233,5 +261,11 @@ button.secondary:hover,
 @media (max-width: 480px) {
   body {
     background: #efede6;
+  }
+
+  .history-calendar-day.is-today:not(.has-record)::before,
+  .history-calendar-day.has-record::before {
+    width: 28px;
+    height: 28px;
   }
 }
