@@ -16,6 +16,18 @@ async function waitFor(getter, attempts = 30, delay = 50) {
   return null;
 }
 
+function renameManageButtons(root = document) {
+  const buttons = [];
+  if (root instanceof HTMLElement && root.matches("[data-subitem-manage]")) buttons.push(root);
+  for (const button of root.querySelectorAll?.("[data-subitem-manage]") ?? []) buttons.push(button);
+
+  for (const button of buttons) {
+    if (!(button instanceof HTMLButtonElement)) continue;
+    button.textContent = "하위 할일 추가";
+    button.setAttribute("aria-label", "하위 할일 추가");
+  }
+}
+
 function ensureQuickActionDialog() {
   if (quickActionDialog) return quickActionDialog;
 
@@ -150,8 +162,8 @@ function decorateProgress(progress) {
     manageButton.type = "button";
     manageButton.className = "subitem-inline-manage-button";
     manageButton.textContent = "+";
-    manageButton.setAttribute("aria-label", "하위항목 관리");
-    manageButton.title = "하위항목 관리";
+    manageButton.setAttribute("aria-label", "하위 할일 추가");
+    manageButton.title = "하위 할일 추가";
     manageButton.addEventListener("click", async (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -182,6 +194,7 @@ function decorateProgress(progress) {
 }
 
 function decorateAll(root = document) {
+  renameManageButtons(root);
   if (root instanceof HTMLElement && root.matches(".subitem-progress")) decorateProgress(root);
   for (const progress of root.querySelectorAll?.(".subitem-progress") ?? []) {
     decorateProgress(progress);
