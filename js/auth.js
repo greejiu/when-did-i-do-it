@@ -18,6 +18,10 @@ const accountEmail = document.querySelector("#account-email");
 const appViews = [...document.querySelectorAll("[data-app-view]")];
 const navButtons = [...document.querySelectorAll("[data-nav-view]")];
 
+let initializedUserId = null;
+let initializingUserId = null;
+let initializationPromise = null;
+
 function setLoading(isLoading) {
   loginButton.disabled = isLoading;
   signupButton.disabled = isLoading;
@@ -26,6 +30,25 @@ function setLoading(isLoading) {
 
 function showMessage(text) {
   message.textContent = text;
+}
+
+function getFriendlyAuthError(error, action) {
+  const code = error?.code ?? "";
+  const text = String(error?.message ?? "").toLowerCase();
+
+  if (code === "email_not_confirmed" || text.includes("email not confirmed")) {
+    return "이메일 인증이 아직 안 됐어요. 받은 인증 메일의 링크를 먼저 눌러 주세요.";
+  }
+
+  if (code === "over_email_send_rate_limit" || text.includes("rate limit")) {
+    return "인증 메일 발송 횟수를 초과했어요. 이미 받은 인증 메일을 확인하거나 잠시 후 다시 시도해 주세요.";
+  }
+
+  if (code === "invalid_credentials" || text.includes("invalid login credentials")) {
+    return "이메일 또는 비밀번호를 확인해 주세요.";
+  }
+
+  return `${action}에 실패했어요. 잠시 후 다시 시도해 주세요.`;
 }
 
 async function switchView(viewName) {
@@ -50,10 +73,17 @@ async function switchView(viewName) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function resetInitializationState() {
+  initializedUserId = null;
+  initializingUserId = null;
+  initializationPromise = null;
+}
+
 function showLoggedOut() {
   authSection.classList.remove("hidden");
   appSection.classList.add("hidden");
   accountEmail.textContent = "";
+  resetInitializationState();
   resetItemsUI();
   resetTaxonomyUI();
   resetRecordsUI();
@@ -97,14 +127,30 @@ async function loadAppData(user) {
 
 async function initializeLoggedInApp(user) {
   if (!user) return;
+  if (initializedUserId === user.id) return;
 
-  try {
-    await ensureInitialDefaults(user);
-    await loadAppData(user);
-  } catch (error) {
-    console.error(error);
-    window.alert("앱 데이터를 불러오지 못했어요. 잠시 후 새로고침해 주세요.");
+  if (initializationPromise && initializingUserId === user.id) {
+    return initializationPromise;
   }
+
+  initializingUserId = user.id;
+  initializationPromise = (async () => {
+    try {
+      await ensureInitialDefaults(user);
+      await loadAppData(user);
+      initializedUserId = user.id;
+    } catch (error) {
+      console.error(error);
+      showMessage("앱 데이터를 불러오지 못했어요. 잠시 후 새로고침해 주세요.");
+    } finally {
+      if (initializingUserId === user.id) {
+        initializingUserId = null;
+        initializationPromise = null;
+      }
+    }
+  })();
+
+  return initializationPromise;
 }
 
 async function refreshSessionUI() {
@@ -137,7 +183,7 @@ async function login() {
   setLoading(false);
 
   if (error) {
-    showMessage(`로그인 실패: ${error.message}`);
+    showMessage(getFriendlyAuthError(error, "로그인"));
     return;
   }
 
@@ -173,7 +219,7 @@ async function signup() {
   setLoading(false);
 
   if (error) {
-    showMessage(`회원가입 실패: ${error.message}`);
+    showMessage(getFriendlyAuthError(error, "회원가입"));
     return;
   }
 
@@ -183,7 +229,7 @@ async function signup() {
     return;
   }
 
-  showMessage("회원가입 완료! 받은 이메일의 인증 링크를 누른 뒤 로그인해 주세요.");
+  showMessage("회원가입 요청 완료! 받은 이메일의 인증 링크를 한 번만 눌러 주세요.");
 }
 
 authForm.addEventListener("submit", (event) => {
