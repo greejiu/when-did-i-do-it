@@ -106,6 +106,110 @@ function formatRepeat(item) {
   return `${item.repeat_interval}${unitLabel}마다`;
 }
 
+function toLocalDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function parseDateOnly(value) {
+  if (!value) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function addRepeatInterval(date, unit, interval) {
+  const result = toLocalDay(date);
+
+  if (unit === "day") {
+    result.setDate(result.getDate() + interval);
+    return result;
+  }
+
+  if (unit === "week") {
+    result.setDate(result.getDate() + interval * 7);
+    return result;
+  }
+
+  if (unit === "month") {
+    const originalDay = result.getDate();
+    result.setDate(1);
+    result.setMonth(result.getMonth() + interval);
+    const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+    result.setDate(Math.min(originalDay, lastDay));
+    return result;
+  }
+
+  return null;
+}
+
+function formatDate(date) {
+  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function getNextDueDate(item) {
+  if (item.next_due_override) {
+    return parseDateOnly(item.next_due_override);
+  }
+
+  if (!item.latest_completed_at || !item.repeat_unit || !item.repeat_interval) {
+    return null;
+  }
+
+  return addRepeatInterval(new Date(item.latest_completed_at), item.repeat_unit, item.repeat_interval);
+}
+
+function getDueStatus(dueDate) {
+  if (!dueDate) return null;
+
+  const today = toLocalDay(new Date());
+  const due = toLocalDay(dueDate);
+  const difference = Math.round((due - today) / 86400000);
+
+  if (difference > 0) {
+    return { text: `${difference}일 남음`, className: "due-upcoming" };
+  }
+
+  if (difference === 0) {
+    return { text: "오늘 예정", className: "due-today" };
+  }
+
+  return { text: `${Math.abs(difference)}일 지남`, className: "due-overdue" };
+}
+
+async function completeItem(item, button) {
+  if (!currentUserId) return;
+
+  button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = "기록 중...";
+
+  const { error: insertError } = await supabase.from("completion_records").insert({
+    user_id: currentUserId,
+    item_id: item.id,
+    completed_at: new Date().toISOString(),
+  });
+
+  if (insertError) {
+    console.error(insertError);
+    button.disabled = false;
+    button.textContent = originalText;
+    window.alert(`완료 기록 저장 실패: ${insertError.message}`);
+    return;
+  }
+
+  if (item.next_due_override) {
+    const { error: updateError } = await supabase
+      .from("items")
+      .update({ next_due_override: null, updated_at: new Date().toISOString() })
+      .eq("id", item.id);
+
+    if (updateError) {
+      console.error(updateError);
+    }
+  }
+
+  await loadItems();
+}
+
 function renderItems(items) {
   itemList.replaceChildren();
   itemStatus.textContent = `${items.length}개`;
@@ -144,13 +248,41 @@ function renderItems(items) {
     repeat.textContent = formatRepeat(item);
     meta.append(repeat);
 
-    if (item.next_due_override) {
+    const lastCompleted = document.createElement("span");
+    lastCompleted.textContent = item.latest_completed_at
+      ? `마지막 완료 ${formatDate(new Date(item.latest_completed_at))}`
+      : "아직 완료 기록 없음";
+    meta.append(lastCompleted);
+
+    const dueDate = getNextDueDate(item);
+    const dueStatus = getDueStatus(dueDate);
+
+    if (dueDate && dueStatus) {
       const nextDue = document.createElement("span");
-      nextDue.textContent = `다음 예정 ${item.next_due_override}`;
+      nextDue.textContent = `다음 예정 ${formatDate(dueDate)}`;
       meta.append(nextDue);
+
+      const countdown = document.createElement("strong");
+      countdown.className = `due-status ${dueStatus.className}`;
+      countdown.textContent = dueStatus.text;
+      meta.append(countdown);
+    } else if (item.repeat_unit && item.repeat_interval) {
+      const waiting = document.createElement("span");
+      waiting.textContent = "첫 완료 후 다음 예정일 계산";
+      meta.append(waiting);
     }
 
-    card.append(top, meta);
+    const actions = document.createElement("div");
+    actions.className = "item-card-actions";
+
+    const completeButton = document.createElement("button");
+    completeButton.type = "button";
+    completeButton.className = "primary complete-button";
+    completeButton.textContent = "완료했어요";
+    completeButton.addEventListener("click", () => completeItem(item, completeButton));
+
+    actions.append(completeButton);
+    card.append(top, meta, actions);
     itemList.append(card);
   }
 }
@@ -160,13 +292,39 @@ async function loadItems() {
 
   itemStatus.textContent = "불러오는 중...";
 
-  const { data, error } = await supabase
+  const { data: items, error: itemError } = await supabase
     .from("items")
     .select("id, name, icon, repeat_unit, repeat_interval, next_due_override, created_at, categories(name, icon)")
     .order("created_at", { ascending: true });
 
-  if (error) throw error;
-  renderItems(data ?? []);
+  if (itemError) throw itemError;
+
+  const rows = items ?? [];
+  const itemIds = rows.map((item) => item.id);
+  const latestByItem = new Map();
+
+  if (itemIds.length > 0) {
+    const { data: records, error: recordError } = await supabase
+      .from("completion_records")
+      .select("item_id, completed_at")
+      .in("item_id", itemIds)
+      .order("completed_at", { ascending: false });
+
+    if (recordError) throw recordError;
+
+    for (const record of records ?? []) {
+      if (!latestByItem.has(record.item_id)) {
+        latestByItem.set(record.item_id, record.completed_at);
+      }
+    }
+  }
+
+  const enrichedItems = rows.map((item) => ({
+    ...item,
+    latest_completed_at: latestByItem.get(item.id) ?? null,
+  }));
+
+  renderItems(enrichedItems);
 }
 
 function fillCategoryOptions(categories) {
