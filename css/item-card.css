@@ -12,9 +12,29 @@
 }
 
 .item-category-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 10px;
   padding: 0 2px;
   border-bottom: 0;
+}
+
+.item-category-heading h3 {
+  margin: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.category-quick-add {
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 999px;
+  font-size: 26px;
+  line-height: 1;
 }
 
 .item-card.item-card-compact {
@@ -153,5 +173,12 @@
 
   .item-card-compact .complete-button {
     min-width: 84px;
+  }
+
+  .category-quick-add {
+    width: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 24px;
   }
 }
