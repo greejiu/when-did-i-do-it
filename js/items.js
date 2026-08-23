@@ -1,4 +1,5 @@
 import { supabase } from "./supabase.js";
+import { openHistoryModal } from "./history.js?v=1";
 
 const addToggleButton = document.querySelector("#item-add-toggle");
 const itemForm = document.querySelector("#item-form");
@@ -345,6 +346,12 @@ function createItemCard(item) {
   const actions = document.createElement("div");
   actions.className = "item-card-actions";
 
+  const historyButton = document.createElement("button");
+  historyButton.type = "button";
+  historyButton.className = "secondary item-action-button history-button";
+  historyButton.textContent = "기록";
+  historyButton.addEventListener("click", () => openHistoryModal(item, currentUserId, loadItems));
+
   const editButton = document.createElement("button");
   editButton.type = "button";
   editButton.className = "secondary item-action-button edit-button";
@@ -363,7 +370,7 @@ function createItemCard(item) {
   completeButton.textContent = "완료했어요";
   completeButton.addEventListener("click", () => completeItem(item, completeButton));
 
-  actions.append(editButton, deleteButton, completeButton);
+  actions.append(historyButton, editButton, deleteButton, completeButton);
   card.append(top, meta, actions);
   return card;
 }
