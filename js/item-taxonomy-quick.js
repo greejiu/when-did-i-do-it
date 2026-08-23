@@ -1,7 +1,7 @@
 import { supabase } from "./supabase.js";
 import { getCategories } from "./categories.js?v=10";
 import { getSections } from "./sections.js?v=10";
-import { initializeItemsUI } from "./items.js?v=15";
+import { initializeItemsUI } from "./items.js?v=16";
 import { initializeTaxonomyUI } from "./taxonomy.js?v=13";
 
 const categorySelect = document.querySelector("#item-category");
