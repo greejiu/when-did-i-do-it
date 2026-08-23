@@ -18,6 +18,7 @@ const recordList = document.querySelector("#history-record-list");
 let currentUserId = null;
 let currentItem = null;
 let currentRecords = [];
+let currentSubitemRecords = [];
 let visibleMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let onRecordsChanged = null;
 
@@ -75,10 +76,16 @@ function renderCalendar() {
   const firstWeekday = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const countsByDay = new Map();
+  const subitemCountsByDay = new Map();
 
   for (const record of currentRecords) {
     const key = timestampToDateKey(record.completed_at);
     countsByDay.set(key, (countsByDay.get(key) ?? 0) + 1);
+  }
+
+  for (const record of currentSubitemRecords) {
+    const key = timestampToDateKey(record.completed_at);
+    subitemCountsByDay.set(key, (subitemCountsByDay.get(key) ?? 0) + 1);
   }
 
   for (let index = 0; index < firstWeekday; index += 1) {
@@ -106,13 +113,25 @@ function renderCalendar() {
     }
 
     const count = countsByDay.get(key) ?? 0;
+    const subitemCount = subitemCountsByDay.get(key) ?? 0;
+
     if (count > 0) {
       button.classList.add("has-record");
       const dot = document.createElement("span");
       dot.className = "history-calendar-dot";
       dot.setAttribute("aria-hidden", "true");
       button.append(dot);
-      button.setAttribute("aria-label", `${month + 1}월 ${day}일, 완료 기록 ${count}개`);
+    }
+
+    if (subitemCount > 0) {
+      button.classList.add("has-subitem-record");
+    }
+
+    if (count > 0 || subitemCount > 0) {
+      const parts = [];
+      if (count > 0) parts.push(`상위 완료 ${count}개`);
+      if (subitemCount > 0) parts.push(`하위 완료 ${subitemCount}개`);
+      button.setAttribute("aria-label", `${month + 1}월 ${day}일, ${parts.join(", ")}`);
     }
 
     calendarGrid.append(button);
@@ -246,6 +265,27 @@ async function loadRecords() {
 
   if (error) throw error;
   currentRecords = data ?? [];
+
+  const { data: subitems, error: subitemError } = await supabase
+    .from("sub_items")
+    .select("id")
+    .eq("item_id", currentItem.id);
+
+  if (subitemError) throw subitemError;
+  const subitemIds = (subitems ?? []).map((subitem) => subitem.id);
+  currentSubitemRecords = [];
+
+  if (subitemIds.length > 0) {
+    const { data: subRecords, error: subRecordError } = await supabase
+      .from("subitem_completion_records")
+      .select("id, sub_item_id, completed_at")
+      .in("sub_item_id", subitemIds)
+      .order("completed_at", { ascending: false });
+
+    if (subRecordError) throw subRecordError;
+    currentSubitemRecords = subRecords ?? [];
+  }
+
   renderCalendar();
   renderRecordList();
 }
@@ -301,7 +341,7 @@ export async function openHistoryModal(item, userId, changedCallback) {
   dateInput.value = todayKey();
   dateInput.max = todayKey();
   title.textContent = item.name;
-  subtitle.textContent = "완료한 날짜를 달력으로 확인하고 직접 기록할 수 있어요.";
+  subtitle.textContent = "큰 원은 상위 완료, 작은 점은 하위항목을 한 기록이에요.";
   setMessage("");
 
   document.body.classList.add("history-modal-open");
@@ -320,6 +360,7 @@ function closeHistoryModal() {
   document.body.classList.remove("history-modal-open");
   currentItem = null;
   currentRecords = [];
+  currentSubitemRecords = [];
   onRecordsChanged = null;
   recordList.replaceChildren();
   calendarGrid.replaceChildren();
@@ -339,5 +380,6 @@ modal.addEventListener("close", () => {
   document.body.classList.remove("history-modal-open");
   currentItem = null;
   currentRecords = [];
+  currentSubitemRecords = [];
   onRecordsChanged = null;
 });
