@@ -121,5 +121,5 @@ supabase.auth.onAuthStateChange(async (_event, session) => {
   await refreshAndAssign();
 });
 
-await import("./subitems.js?v=1");
+await import("./subitems.js?v=2");
 await import("./history-subitems-compat.js?v=1");
