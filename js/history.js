@@ -304,6 +304,7 @@ export async function openHistoryModal(item, userId, changedCallback) {
   subtitle.textContent = "완료한 날짜를 달력으로 확인하고 직접 기록할 수 있어요.";
   setMessage("");
 
+  document.body.classList.add("history-modal-open");
   if (!modal.open) modal.showModal();
 
   try {
@@ -316,6 +317,7 @@ export async function openHistoryModal(item, userId, changedCallback) {
 
 function closeHistoryModal() {
   if (modal.open) modal.close();
+  document.body.classList.remove("history-modal-open");
   currentItem = null;
   currentRecords = [];
   onRecordsChanged = null;
@@ -334,6 +336,7 @@ modal.addEventListener("click", (event) => {
 });
 
 modal.addEventListener("close", () => {
+  document.body.classList.remove("history-modal-open");
   currentItem = null;
   currentRecords = [];
   onRecordsChanged = null;
