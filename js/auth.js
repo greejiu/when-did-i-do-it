@@ -1,8 +1,9 @@
 import { supabase } from "./supabase.js";
 import { ensureDefaultCategories, getCategories } from "./categories.js?v=10";
 import { ensureDefaultSections, getSections } from "./sections.js?v=10";
-import { initializeItemsUI, resetItemsUI } from "./items.js?v=13";
+import { initializeItemsUI, refreshItemsUI, resetItemsUI } from "./items.js?v=14";
 import { initializeTaxonomyUI, resetTaxonomyUI } from "./taxonomy.js?v=12";
+import { initializeRecordsUI, refreshRecordsUI, resetRecordsUI } from "./records.js?v=1";
 
 const authSection = document.querySelector("#auth-section");
 const appSection = document.querySelector("#app-section");
@@ -14,8 +15,8 @@ const signupButton = document.querySelector("#signup-button");
 const logoutButton = document.querySelector("#logout-button");
 const message = document.querySelector("#auth-message");
 const accountEmail = document.querySelector("#account-email");
-const categoryList = document.querySelector("#category-list");
-const categoryStatus = document.querySelector("#category-status");
+const appViews = [...document.querySelectorAll("[data-app-view]")];
+const navButtons = [...document.querySelectorAll("[data-nav-view]")];
 
 function setLoading(isLoading) {
   loginButton.disabled = isLoading;
@@ -27,14 +28,36 @@ function showMessage(text) {
   message.textContent = text;
 }
 
+async function switchView(viewName) {
+  for (const view of appViews) {
+    view.classList.toggle("hidden", view.dataset.appView !== viewName);
+  }
+
+  for (const button of navButtons) {
+    const active = button.dataset.navView === viewName;
+    button.classList.toggle("is-active", active);
+    if (active) {
+      button.setAttribute("aria-current", "page");
+    } else {
+      button.removeAttribute("aria-current");
+    }
+  }
+
+  if (viewName === "records") {
+    await refreshRecordsUI();
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function showLoggedOut() {
   authSection.classList.remove("hidden");
   appSection.classList.add("hidden");
   accountEmail.textContent = "";
-  categoryList.replaceChildren();
-  categoryStatus.textContent = "";
   resetItemsUI();
   resetTaxonomyUI();
+  resetRecordsUI();
+  switchView("home");
 }
 
 function showLoggedIn(user) {
@@ -42,19 +65,7 @@ function showLoggedIn(user) {
   appSection.classList.remove("hidden");
   accountEmail.textContent = user?.email ?? "로그인됨";
   showMessage("");
-}
-
-function renderCategories(categories) {
-  categoryList.replaceChildren();
-
-  for (const category of categories) {
-    const item = document.createElement("div");
-    item.className = "category-item";
-    item.textContent = category.name;
-    categoryList.append(item);
-  }
-
-  categoryStatus.textContent = `${categories.length}개`;
+  switchView("home");
 }
 
 async function ensureInitialDefaults(user) {
@@ -77,8 +88,8 @@ async function loadAppData(user) {
   const categories = await getCategories();
   const sections = await getSections();
 
-  renderCategories(categories);
   await initializeItemsUI(user.id, categories, sections);
+  await initializeRecordsUI(user.id, refreshItemsUI);
   initializeTaxonomyUI(user.id, categories, sections, async () => {
     await loadAppData(user);
   });
@@ -87,15 +98,12 @@ async function loadAppData(user) {
 async function initializeLoggedInApp(user) {
   if (!user) return;
 
-  categoryStatus.textContent = "불러오는 중...";
-
   try {
     await ensureInitialDefaults(user);
     await loadAppData(user);
   } catch (error) {
     console.error(error);
-    categoryStatus.textContent = "불러오기 실패";
-    categoryList.textContent = "카테고리를 불러오지 못했어요. 잠시 후 새로고침해 주세요.";
+    window.alert("앱 데이터를 불러오지 못했어요. 잠시 후 새로고침해 주세요.");
   }
 }
 
@@ -184,6 +192,15 @@ authForm.addEventListener("submit", (event) => {
 });
 
 signupButton.addEventListener("click", signup);
+
+for (const button of navButtons) {
+  button.addEventListener("click", () => switchView(button.dataset.navView));
+}
+
+window.addEventListener("app:navigate", (event) => {
+  const view = event.detail?.view;
+  if (view) switchView(view);
+});
 
 logoutButton.addEventListener("click", async () => {
   setLoading(true);
