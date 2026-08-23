@@ -1,6 +1,7 @@
 import { supabase } from "./supabase.js";
 import { ensureDefaultCategories, getCategories } from "./categories.js";
-import { initializeItemsUI, resetItemsUI } from "./items.js?v=4";
+import { ensureDefaultSections, getSections } from "./sections.js";
+import { initializeItemsUI, resetItemsUI } from "./items.js?v=6";
 
 const authSection = document.querySelector("#auth-section");
 const appSection = document.querySelector("#app-section");
@@ -70,8 +71,10 @@ async function initializeLoggedInApp(user) {
   try {
     await ensureDefaultCategories(user.id);
     const categories = await getCategories();
+    await ensureDefaultSections(user.id, categories);
+    const sections = await getSections();
     renderCategories(categories);
-    await initializeItemsUI(user.id, categories);
+    await initializeItemsUI(user.id, categories, sections);
   } catch (error) {
     console.error(error);
     categoryStatus.textContent = "불러오기 실패";
