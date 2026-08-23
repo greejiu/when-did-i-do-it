@@ -513,6 +513,8 @@ supabase.auth.onAuthStateChange((_event, session) => {
   scheduleRefresh();
 });
 
+window.addEventListener("app:subitems-changed", scheduleRefresh);
+
 ensureManagerDialog();
 ensureActionDialogButton();
 scheduleRefresh();
