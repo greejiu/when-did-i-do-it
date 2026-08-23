@@ -1,3 +1,5 @@
+import "./theme-settings.js?v=1";
+import "./scroll-preserve.js?v=1";
 import { supabase } from "./supabase.js";
 
 let itemRows = [];
@@ -84,7 +86,7 @@ async function refreshAndAssign(root = document) {
     await loadReferenceData();
     assignIds(root);
   } catch (error) {
-    console.error("하위항목 연결용 항목 정보를 불러오지 못했어요.", error);
+    console.error("하위 할일 연결용 항목 정보를 불러오지 못했어요.", error);
   }
 }
 
