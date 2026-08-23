@@ -1,0 +1,269 @@
+.history-modal {
+  width: min(560px, calc(100% - 32px));
+  max-height: min(88vh, 760px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid #c7cfd5;
+  border-radius: 18px;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 24px 70px rgba(20, 28, 35, 0.22);
+}
+
+.history-modal::backdrop {
+  background: rgba(32, 40, 47, 0.48);
+  backdrop-filter: blur(2px);
+}
+
+.history-modal-shell {
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.history-modal-header,
+.history-calendar-toolbar,
+.history-record-heading,
+.history-record-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.history-modal-header {
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #d8dde1;
+}
+
+.history-modal-header h2 {
+  margin-bottom: 3px;
+}
+
+.history-modal-header .muted {
+  margin: 0;
+  font-size: 12px;
+}
+
+.history-close {
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-color: #cbd2d8;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.history-calendar-card,
+.history-record-card {
+  padding: 14px;
+  border: 1px solid #d3d9de;
+  border-radius: 14px;
+  background: #f5f7f8;
+}
+
+.history-record-card {
+  margin-top: 14px;
+}
+
+.history-calendar-toolbar {
+  margin-bottom: 10px;
+}
+
+.history-calendar-toolbar strong {
+  font-size: 15px;
+}
+
+.history-month-button {
+  width: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-color: #cbd2d8;
+  font-size: 18px;
+}
+
+.history-weekdays,
+.history-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.history-weekdays {
+  margin-bottom: 5px;
+  color: #687078;
+  font-size: 11px;
+  text-align: center;
+}
+
+.history-calendar-blank {
+  aspect-ratio: 1;
+}
+
+.history-calendar-day {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.history-calendar-day:hover:not(:disabled) {
+  background: #fff;
+  border-color: #cbd2d8;
+}
+
+.history-calendar-day.is-today {
+  border-color: #8f99a1;
+  font-weight: 700;
+}
+
+.history-calendar-day.is-future {
+  color: #b3b9be;
+  cursor: default;
+}
+
+.history-calendar-day.has-record {
+  background: #fff;
+  border-color: #aeb8bf;
+  font-weight: 700;
+}
+
+.history-calendar-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #222;
+}
+
+.history-add-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.history-add-form label {
+  gap: 5px;
+  font-size: 12px;
+}
+
+.history-add-form input {
+  padding: 9px 10px;
+}
+
+.history-add-button {
+  width: auto;
+  min-height: 38px;
+  padding: 8px 11px;
+  white-space: nowrap;
+}
+
+#history-message {
+  min-height: 20px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.history-record-heading {
+  margin-bottom: 9px;
+}
+
+.history-record-heading h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.history-record-list {
+  display: grid;
+  gap: 7px;
+}
+
+.history-record-row {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #cbd2d8;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.history-record-main {
+  min-width: 0;
+  flex: 1;
+  font-size: 13px;
+}
+
+.history-record-date-input {
+  width: min(180px, 100%);
+  padding: 7px 8px;
+}
+
+.history-record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.history-record-button {
+  width: auto;
+  min-height: 28px;
+  padding: 4px 8px;
+  border-color: #c9d0d5;
+  font-size: 11px;
+}
+
+.history-empty {
+  padding: 10px 2px;
+}
+
+.history-button {
+  border-color: #cbd2d8;
+  color: #505960;
+}
+
+@media (max-width: 480px) {
+  .history-modal {
+    width: calc(100% - 16px);
+    max-height: 92vh;
+    border-radius: 16px;
+  }
+
+  .history-modal-shell {
+    max-height: 92vh;
+    padding: 16px;
+  }
+
+  .history-add-form {
+    grid-template-columns: 1fr;
+  }
+
+  .history-add-button {
+    justify-self: start;
+  }
+
+  .history-record-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .history-record-actions {
+    width: 100%;
+  }
+}
