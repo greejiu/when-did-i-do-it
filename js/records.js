@@ -11,142 +11,134 @@ function pad(value) {
   return String(value).padStart(2, "0");
 }
 
-function toDateKey(value) {
+function formatDate(value) {
   const date = new Date(value);
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`;
 }
 
-function formatDateKey(value) {
-  const [year, month, day] = value.split("-");
-  return `${year}.${month}.${day}`;
+function getRelationName(value) {
+  if (!value) return "";
+  if (Array.isArray(value)) return value[0]?.name ?? "";
+  return value.name ?? "";
 }
 
-function getItem(record) {
-  if (Array.isArray(record.items)) return record.items[0] ?? null;
-  return record.items ?? null;
-}
-
-function getCategoryName(item) {
-  if (!item?.categories) return "";
-  if (Array.isArray(item.categories)) return item.categories[0]?.name ?? "";
-  return item.categories.name ?? "";
-}
-
-function renderRecords(records) {
+function renderItems(items, countsByItem, latestByItem) {
   recordList.replaceChildren();
-  recordStatus.textContent = `${records.length}개`;
+  recordStatus.textContent = `${items.length}개`;
 
-  if (records.length === 0) {
+  if (items.length === 0) {
     const empty = document.createElement("p");
     empty.className = "muted global-record-empty";
-    empty.textContent = "아직 완료 기록이 없어요.";
+    empty.textContent = "아직 등록한 항목이 없어요.";
     recordList.append(empty);
     return;
   }
 
-  const groups = new Map();
-  for (const record of records) {
-    const key = toDateKey(record.completed_at);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(record);
-  }
+  for (const item of items) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "record-item-button";
 
-  for (const [dateKey, dayRecords] of groups) {
-    const group = document.createElement("section");
-    group.className = "global-record-group";
+    const main = document.createElement("div");
+    main.className = "record-item-main";
 
-    const heading = document.createElement("div");
-    heading.className = "global-record-date";
+    const name = document.createElement("strong");
+    name.textContent = item.name;
+    main.append(name);
 
-    const date = document.createElement("strong");
-    date.textContent = formatDateKey(dateKey);
+    const meta = document.createElement("span");
+    meta.className = "muted record-item-meta";
 
-    const count = document.createElement("span");
-    count.className = "muted";
-    count.textContent = `${dayRecords.length}개`;
+    const categoryName = getRelationName(item.categories);
+    const sectionName = getRelationName(item.sections);
+    const count = countsByItem.get(item.id) ?? 0;
+    const latest = latestByItem.get(item.id) ?? null;
 
-    heading.append(date, count);
-    group.append(heading);
+    const location = [categoryName, sectionName].filter(Boolean).join(" · ");
+    const history = latest
+      ? `기록 ${count}회 · 마지막 ${formatDate(latest)}`
+      : "아직 완료 기록 없음";
 
-    const rows = document.createElement("div");
-    rows.className = "global-record-rows";
+    meta.textContent = location ? `${location} · ${history}` : history;
+    main.append(meta);
 
-    for (const record of dayRecords) {
-      const item = getItem(record);
-      if (!item) continue;
+    const arrow = document.createElement("span");
+    arrow.className = "record-item-arrow";
+    arrow.textContent = "›";
+    arrow.setAttribute("aria-hidden", "true");
 
-      const row = document.createElement("div");
-      row.className = "global-record-row";
+    button.append(main, arrow);
+    button.addEventListener("click", () => {
+      openHistoryModal(
+        { id: item.id, name: item.name },
+        currentUserId,
+        async () => {
+          await loadRecordItems();
+          if (onRecordsChanged) await onRecordsChanged();
+        }
+      );
+    });
 
-      const main = document.createElement("div");
-      main.className = "global-record-main";
-
-      const itemName = document.createElement("strong");
-      itemName.textContent = item.name;
-      main.append(itemName);
-
-      const categoryName = getCategoryName(item);
-      if (categoryName) {
-        const category = document.createElement("span");
-        category.className = "muted global-record-category";
-        category.textContent = categoryName;
-        main.append(category);
-      }
-
-      const calendarButton = document.createElement("button");
-      calendarButton.type = "button";
-      calendarButton.className = "secondary global-record-button";
-      calendarButton.textContent = "달력";
-      calendarButton.addEventListener("click", () => {
-        openHistoryModal(
-          { id: item.id, name: item.name },
-          currentUserId,
-          async () => {
-            await loadGlobalRecords();
-            if (onRecordsChanged) await onRecordsChanged();
-          }
-        );
-      });
-
-      row.append(main, calendarButton);
-      rows.append(row);
-    }
-
-    group.append(rows);
-    recordList.append(group);
+    recordList.append(button);
   }
 }
 
-async function loadGlobalRecords() {
+async function loadRecordItems() {
   if (!currentUserId) return;
 
   recordStatus.textContent = "불러오는 중...";
-  recordList.textContent = "";
+  recordList.replaceChildren();
 
-  const { data, error } = await supabase
-    .from("completion_records")
-    .select("id, item_id, completed_at, items(id, name, categories(name))")
-    .order("completed_at", { ascending: false })
-    .limit(100);
+  const { data: items, error: itemError } = await supabase
+    .from("items")
+    .select("id, name, created_at, categories(name), sections(name)")
+    .order("created_at", { ascending: true });
 
-  if (error) {
-    console.error(error);
+  if (itemError) {
+    console.error(itemError);
     recordStatus.textContent = "불러오기 실패";
-    recordList.textContent = "완료 기록을 불러오지 못했어요.";
+    recordList.textContent = "항목을 불러오지 못했어요.";
     return;
   }
 
-  renderRecords(data ?? []);
+  const rows = items ?? [];
+  const itemIds = rows.map((item) => item.id);
+  const countsByItem = new Map();
+  const latestByItem = new Map();
+
+  if (itemIds.length > 0) {
+    const { data: records, error: recordError } = await supabase
+      .from("completion_records")
+      .select("item_id, completed_at")
+      .in("item_id", itemIds)
+      .order("completed_at", { ascending: false });
+
+    if (recordError) {
+      console.error(recordError);
+      recordStatus.textContent = "불러오기 실패";
+      recordList.textContent = "완료 기록을 불러오지 못했어요.";
+      return;
+    }
+
+    for (const record of records ?? []) {
+      countsByItem.set(record.item_id, (countsByItem.get(record.item_id) ?? 0) + 1);
+      if (!latestByItem.has(record.item_id)) {
+        latestByItem.set(record.item_id, record.completed_at);
+      }
+    }
+  }
+
+  renderItems(rows, countsByItem, latestByItem);
 }
 
 export async function initializeRecordsUI(userId, changedCallback) {
   currentUserId = userId;
   onRecordsChanged = changedCallback;
-  await loadGlobalRecords();
+  await loadRecordItems();
 }
 
 export async function refreshRecordsUI() {
-  await loadGlobalRecords();
+  await loadRecordItems();
 }
 
 export function resetRecordsUI() {
