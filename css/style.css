@@ -310,15 +310,27 @@ button:disabled {
 
 .item-card-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 6px;
   margin-top: 10px;
 }
 
-.complete-button {
+.item-action-button {
   width: auto;
-  min-height: 32px;
-  padding: 6px 10px;
-  font-size: 13px;
+  min-height: 30px;
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
+.edit-button,
+.delete-button {
+  border-color: #d5d5d5;
+  color: #666;
+}
+
+.complete-button {
+  min-height: 30px;
 }
 
 .empty-state {
@@ -360,9 +372,6 @@ button:disabled {
 
   .item-card-actions {
     width: 100%;
-  }
-
-  .complete-button {
-    width: auto;
+    justify-content: flex-end;
   }
 }
