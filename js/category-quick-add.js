@@ -31,6 +31,8 @@ let quickAddSubtitle = null;
 let quickAddSlot = null;
 let itemFormPlaceholder = null;
 let bypassMainAddIntercept = false;
+let interceptingEdit = false;
+let pendingEditName = "";
 
 function getItemForm() {
   const form = document.querySelector("#item-form");
@@ -131,6 +133,12 @@ function watchFormState(form) {
   observer.observe(form, { attributes: true, attributeFilter: ["class"] });
 }
 
+function moveFormIntoModal(form) {
+  ensurePlaceholder(form);
+  watchFormState(form);
+  quickAddSlot?.append(form);
+}
+
 function presentFormInModal({ categoryName = "" } = {}) {
   const modal = ensureQuickAddModal();
   const form = getItemForm();
@@ -140,9 +148,7 @@ function presentFormInModal({ categoryName = "" } = {}) {
 
   if (!form || !(categorySelect instanceof HTMLSelectElement)) return;
 
-  ensurePlaceholder(form);
-  watchFormState(form);
-  quickAddSlot?.append(form);
+  moveFormIntoModal(form);
 
   if (categoryName) {
     if (quickAddTitle) quickAddTitle.textContent = `${categoryName} 항목 추가`;
@@ -166,6 +172,25 @@ function presentFormInModal({ categoryName = "" } = {}) {
     }
     if (message instanceof HTMLElement) message.textContent = "";
   }
+
+  if (!modal.open) modal.showModal();
+
+  window.setTimeout(() => {
+    if (nameInput instanceof HTMLInputElement) nameInput.focus();
+  }, 40);
+}
+
+function presentEditFormInModal(itemName = "") {
+  const modal = ensureQuickAddModal();
+  const form = getItemForm();
+  const nameInput = document.querySelector("#item-name");
+
+  if (!form || form.classList.contains("hidden")) return;
+
+  moveFormIntoModal(form);
+
+  if (quickAddTitle) quickAddTitle.textContent = itemName ? `${itemName} 수정` : "항목 수정";
+  if (quickAddSubtitle) quickAddSubtitle.textContent = "내용을 수정한 뒤 수정 저장을 눌러주세요.";
 
   if (!modal.open) modal.showModal();
 
@@ -255,6 +280,44 @@ function enhanceCategoryHeadings(root = document) {
     attachQuickAddButton(heading);
   }
 }
+
+/* 기존 편집 로직이 홈 탭으로 이동하려는 동작만 막고, 입력값 채우기는 그대로 사용한다. */
+document.addEventListener(
+  "click",
+  (event) => {
+    const target = event.target instanceof Element ? event.target.closest(".edit-button") : null;
+    if (!(target instanceof HTMLButtonElement)) return;
+
+    interceptingEdit = true;
+    pendingEditName = target.closest(".item-card")?.querySelector(".item-title")?.textContent?.trim() || "";
+
+    window.setTimeout(() => {
+      interceptingEdit = false;
+    }, 100);
+  },
+  true
+);
+
+window.addEventListener(
+  "app:navigate",
+  (event) => {
+    if (!interceptingEdit || event.detail?.view !== "home") return;
+    event.stopImmediatePropagation();
+  },
+  true
+);
+
+document.addEventListener("click", (event) => {
+  const target = event.target instanceof Element ? event.target.closest(".edit-button") : null;
+  if (!(target instanceof HTMLButtonElement)) return;
+
+  const itemName = pendingEditName;
+  window.setTimeout(() => {
+    presentEditFormInModal(itemName);
+    interceptingEdit = false;
+    pendingEditName = "";
+  }, 0);
+});
 
 const observer = new MutationObserver((mutations) => {
   attachMainAddPopupBehavior();
