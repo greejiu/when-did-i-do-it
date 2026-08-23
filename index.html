@@ -33,17 +33,23 @@
     </section>
 
     <section id="app-section" class="card app-card hidden">
-      <div>
-        <h1>그거 언제 했더라</h1>
-        <p>로그인 성공 ✓</p>
+      <div class="app-header">
+        <div>
+          <h1>그거 언제 했더라</h1>
+          <p class="account-email" id="account-email"></p>
+        </div>
+        <button id="logout-button" class="secondary compact" type="button">로그아웃</button>
       </div>
 
-      <div>
-        <p class="account-email" id="account-email"></p>
-        <p>다음 단계에서 관리 항목을 추가할 수 있게 만들 거야.</p>
-      </div>
+      <section>
+        <div class="section-heading">
+          <h2>카테고리</h2>
+          <span id="category-status" class="muted">불러오는 중...</span>
+        </div>
+        <div id="category-list" class="category-list" aria-live="polite"></div>
+      </section>
 
-      <button id="logout-button" class="secondary" type="button">로그아웃</button>
+      <p class="muted">다음 단계에서 첫 관리 항목을 추가할 수 있게 만들 거야.</p>
     </section>
   </main>
 
