@@ -1,7 +1,7 @@
 import { supabase } from "./supabase.js";
 import { ensureDefaultCategories, getCategories } from "./categories.js?v=7";
 import { ensureDefaultSections, getSections } from "./sections.js?v=7";
-import { initializeItemsUI, resetItemsUI } from "./items.js?v=7";
+import { initializeItemsUI, resetItemsUI } from "./items.js?v=8";
 
 const authSection = document.querySelector("#auth-section");
 const appSection = document.querySelector("#app-section");
