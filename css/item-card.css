@@ -3,6 +3,20 @@
   display: none;
 }
 
+/* 카테고리는 제목만 남기고, 바깥 큰 카드 껍데기는 없앤다. */
+.item-category-group {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.item-category-heading {
+  margin-bottom: 10px;
+  padding: 0 2px;
+  border-bottom: 0;
+}
+
 .item-card.item-card-compact {
   position: relative;
   padding: 12px 14px;
