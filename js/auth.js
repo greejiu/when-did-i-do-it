@@ -2,7 +2,7 @@ import { supabase } from "./supabase.js";
 import { ensureDefaultCategories, getCategories } from "./categories.js?v=10";
 import { ensureDefaultSections, getSections } from "./sections.js?v=10";
 import { initializeItemsUI, refreshItemsUI, resetItemsUI } from "./items.js?v=14";
-import { initializeTaxonomyUI, resetTaxonomyUI } from "./taxonomy.js?v=12";
+import { initializeTaxonomyUI, resetTaxonomyUI } from "./taxonomy.js?v=13";
 import { initializeRecordsUI, refreshRecordsUI, resetRecordsUI } from "./records.js?v=2";
 
 const authSection = document.querySelector("#auth-section");
