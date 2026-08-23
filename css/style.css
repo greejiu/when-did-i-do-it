@@ -243,10 +243,32 @@ button:disabled {
 .item-meta {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px 12px;
   margin-top: 8px;
   color: #666;
   font-size: 13px;
+}
+
+.due-status {
+  color: #222;
+  font-size: 13px;
+}
+
+.due-overdue {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.item-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.complete-button {
+  min-height: 38px;
+  padding: 8px 14px;
 }
 
 .empty-state {
@@ -284,5 +306,10 @@ button:disabled {
   .item-card-top {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .item-card-actions,
+  .complete-button {
+    width: 100%;
   }
 }
