@@ -6,6 +6,7 @@ const cancelButton = document.querySelector("#item-cancel-button");
 const itemNameInput = document.querySelector("#item-name");
 const itemIconInput = document.querySelector("#item-icon");
 const itemCategorySelect = document.querySelector("#item-category");
+const itemSectionSelect = document.querySelector("#item-section");
 const repeatTypeSelect = document.querySelector("#repeat-type");
 const repeatNumberGroup = document.querySelector("#repeat-number-group");
 const repeatNumberLabel = document.querySelector("#repeat-number-label");
@@ -19,6 +20,8 @@ const itemStatus = document.querySelector("#item-status");
 const saveButton = document.querySelector("#item-save-button");
 
 let currentUserId = null;
+let currentCategories = [];
+let currentSections = [];
 
 function setMessage(text) {
   itemMessage.textContent = text;
@@ -39,6 +42,7 @@ function closeForm() {
   itemForm.reset();
   repeatTypeSelect.value = "daily";
   updateRepeatFields();
+  fillSectionOptions(itemCategorySelect.value);
   setMessage("");
   itemForm.classList.add("hidden");
   addToggleButton.classList.remove("hidden");
@@ -202,12 +206,94 @@ async function completeItem(item, button) {
       .update({ next_due_override: null, updated_at: new Date().toISOString() })
       .eq("id", item.id);
 
-    if (updateError) {
-      console.error(updateError);
-    }
+    if (updateError) console.error(updateError);
   }
 
   await loadItems();
+}
+
+function createItemCard(item) {
+  const card = document.createElement("article");
+  card.className = "item-card";
+
+  const top = document.createElement("div");
+  top.className = "item-card-top";
+
+  const title = document.createElement("strong");
+  title.className = "item-title";
+  title.textContent = `${item.icon || "•"} ${item.name}`;
+  top.append(title);
+
+  const meta = document.createElement("div");
+  meta.className = "item-meta";
+
+  const repeat = document.createElement("span");
+  repeat.textContent = formatRepeat(item);
+  meta.append(repeat);
+
+  const lastCompleted = document.createElement("span");
+  lastCompleted.textContent = item.latest_completed_at
+    ? `마지막 완료 ${formatDate(new Date(item.latest_completed_at))}`
+    : "아직 완료 기록 없음";
+  meta.append(lastCompleted);
+
+  const dueDate = getNextDueDate(item);
+  const dueStatus = getDueStatus(dueDate);
+
+  if (dueDate && dueStatus) {
+    const nextDue = document.createElement("span");
+    nextDue.textContent = `다음 예정 ${formatDate(dueDate)}`;
+    meta.append(nextDue);
+
+    const countdown = document.createElement("strong");
+    countdown.className = `due-status ${dueStatus.className}`;
+    countdown.textContent = dueStatus.text;
+    meta.append(countdown);
+  } else if (item.repeat_unit && item.repeat_interval) {
+    const waiting = document.createElement("span");
+    waiting.textContent = "첫 완료 후 다음 예정일 계산";
+    meta.append(waiting);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "item-card-actions";
+
+  const completeButton = document.createElement("button");
+  completeButton.type = "button";
+  completeButton.className = "primary complete-button";
+  completeButton.textContent = "완료했어요";
+  completeButton.addEventListener("click", () => completeItem(item, completeButton));
+
+  actions.append(completeButton);
+  card.append(top, meta, actions);
+  return card;
+}
+
+function appendSectionGroup(parent, titleText, items) {
+  if (items.length === 0) return;
+
+  const group = document.createElement("section");
+  group.className = "item-section-group";
+
+  const heading = document.createElement("div");
+  heading.className = "item-section-heading";
+
+  const title = document.createElement("h4");
+  title.textContent = titleText;
+
+  const count = document.createElement("span");
+  count.className = "muted";
+  count.textContent = `${items.length}개`;
+
+  heading.append(title, count);
+  group.append(heading);
+
+  const cards = document.createElement("div");
+  cards.className = "item-section-cards";
+  for (const item of items) cards.append(createItemCard(item));
+
+  group.append(cards);
+  parent.append(group);
 }
 
 function renderItems(items) {
@@ -222,68 +308,44 @@ function renderItems(items) {
     return;
   }
 
-  for (const item of items) {
-    const card = document.createElement("article");
-    card.className = "item-card";
+  for (const category of currentCategories) {
+    const categoryItems = items.filter((item) => item.category_id === category.id);
+    if (categoryItems.length === 0) continue;
 
-    const top = document.createElement("div");
-    top.className = "item-card-top";
+    const categoryGroup = document.createElement("section");
+    categoryGroup.className = "item-category-group";
 
-    const title = document.createElement("strong");
-    title.className = "item-title";
-    title.textContent = `${item.icon || "•"} ${item.name}`;
+    const categoryHeading = document.createElement("div");
+    categoryHeading.className = "item-category-heading";
 
-    const category = document.createElement("span");
-    category.className = "item-category";
-    category.textContent = item.categories
-      ? `${item.categories.icon || ""} ${item.categories.name}`.trim()
-      : "카테고리 없음";
+    const categoryTitle = document.createElement("h3");
+    categoryTitle.textContent = `${category.icon || ""} ${category.name}`.trim();
 
-    top.append(title, category);
+    const categoryCount = document.createElement("span");
+    categoryCount.className = "muted";
+    categoryCount.textContent = `${categoryItems.length}개`;
 
-    const meta = document.createElement("div");
-    meta.className = "item-meta";
+    categoryHeading.append(categoryTitle, categoryCount);
+    categoryGroup.append(categoryHeading);
 
-    const repeat = document.createElement("span");
-    repeat.textContent = formatRepeat(item);
-    meta.append(repeat);
+    const categorySections = currentSections.filter((section) => section.category_id === category.id);
 
-    const lastCompleted = document.createElement("span");
-    lastCompleted.textContent = item.latest_completed_at
-      ? `마지막 완료 ${formatDate(new Date(item.latest_completed_at))}`
-      : "아직 완료 기록 없음";
-    meta.append(lastCompleted);
+    if (categorySections.length > 0) {
+      for (const section of categorySections) {
+        const sectionItems = categoryItems.filter((item) => item.section_id === section.id);
+        appendSectionGroup(categoryGroup, section.name, sectionItems);
+      }
 
-    const dueDate = getNextDueDate(item);
-    const dueStatus = getDueStatus(dueDate);
-
-    if (dueDate && dueStatus) {
-      const nextDue = document.createElement("span");
-      nextDue.textContent = `다음 예정 ${formatDate(dueDate)}`;
-      meta.append(nextDue);
-
-      const countdown = document.createElement("strong");
-      countdown.className = `due-status ${dueStatus.className}`;
-      countdown.textContent = dueStatus.text;
-      meta.append(countdown);
-    } else if (item.repeat_unit && item.repeat_interval) {
-      const waiting = document.createElement("span");
-      waiting.textContent = "첫 완료 후 다음 예정일 계산";
-      meta.append(waiting);
+      const noSectionItems = categoryItems.filter((item) => !item.section_id);
+      appendSectionGroup(categoryGroup, "기타", noSectionItems);
+    } else {
+      const cards = document.createElement("div");
+      cards.className = "item-section-cards";
+      for (const item of categoryItems) cards.append(createItemCard(item));
+      categoryGroup.append(cards);
     }
 
-    const actions = document.createElement("div");
-    actions.className = "item-card-actions";
-
-    const completeButton = document.createElement("button");
-    completeButton.type = "button";
-    completeButton.className = "primary complete-button";
-    completeButton.textContent = "완료했어요";
-    completeButton.addEventListener("click", () => completeItem(item, completeButton));
-
-    actions.append(completeButton);
-    card.append(top, meta, actions);
-    itemList.append(card);
+    itemList.append(categoryGroup);
   }
 }
 
@@ -294,7 +356,7 @@ async function loadItems() {
 
   const { data: items, error: itemError } = await supabase
     .from("items")
-    .select("id, name, icon, repeat_unit, repeat_interval, next_due_override, created_at, categories(name, icon)")
+    .select("id, category_id, section_id, name, icon, repeat_unit, repeat_interval, next_due_override, created_at, categories(name, icon), sections(name, category_id)")
     .order("created_at", { ascending: true });
 
   if (itemError) throw itemError;
@@ -338,6 +400,37 @@ function fillCategoryOptions(categories) {
   }
 }
 
+function fillSectionOptions(categoryId) {
+  itemSectionSelect.replaceChildren();
+  const sections = currentSections.filter((section) => section.category_id === categoryId);
+
+  if (sections.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "이 카테고리에는 섹션 없음";
+    itemSectionSelect.append(option);
+    itemSectionSelect.disabled = true;
+    return;
+  }
+
+  itemSectionSelect.disabled = false;
+
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = "섹션 선택";
+  itemSectionSelect.append(emptyOption);
+
+  for (const section of sections) {
+    const option = document.createElement("option");
+    option.value = section.id;
+    option.textContent = section.name;
+    itemSectionSelect.append(option);
+  }
+
+  const fallback = sections.find((section) => section.name === "기타");
+  if (fallback) itemSectionSelect.value = fallback.id;
+}
+
 async function saveItem(event) {
   event.preventDefault();
 
@@ -346,6 +439,7 @@ async function saveItem(event) {
   const name = itemNameInput.value.trim();
   const icon = itemIconInput.value.trim();
   const categoryId = itemCategorySelect.value;
+  const sectionId = itemSectionSelect.disabled ? null : itemSectionSelect.value || null;
   const repeatType = repeatTypeSelect.value;
   const nextDue = nextDueInput.value || null;
   const repeat = getRepeatValues();
@@ -371,6 +465,7 @@ async function saveItem(event) {
   const { error } = await supabase.from("items").insert({
     user_id: currentUserId,
     category_id: categoryId,
+    section_id: sectionId,
     name,
     icon: icon || null,
     repeat_unit: repeat.repeat_unit,
@@ -390,14 +485,19 @@ async function saveItem(event) {
   await loadItems();
 }
 
-export async function initializeItemsUI(userId, categories) {
+export async function initializeItemsUI(userId, categories, sections) {
   currentUserId = userId;
+  currentCategories = categories;
+  currentSections = sections;
+
   fillCategoryOptions(categories);
+  fillSectionOptions(itemCategorySelect.value);
   updateRepeatFields();
 
   addToggleButton.onclick = openForm;
   cancelButton.onclick = closeForm;
   repeatTypeSelect.onchange = updateRepeatFields;
+  itemCategorySelect.onchange = () => fillSectionOptions(itemCategorySelect.value);
   itemForm.onsubmit = saveItem;
 
   try {
@@ -411,6 +511,8 @@ export async function initializeItemsUI(userId, categories) {
 
 export function resetItemsUI() {
   currentUserId = null;
+  currentCategories = [];
+  currentSections = [];
   itemList.replaceChildren();
   itemStatus.textContent = "";
   closeForm();
