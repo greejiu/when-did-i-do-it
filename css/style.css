@@ -250,6 +250,11 @@ button:disabled {
   border-bottom: 1px solid #d8dde1;
 }
 
+.taxonomy-modal-title-area {
+  flex: 1;
+  min-width: 0;
+}
+
 .taxonomy-modal-header h2 {
   margin-bottom: 3px;
 }
@@ -259,15 +264,25 @@ button:disabled {
   font-size: 12px;
 }
 
-.taxonomy-close {
-  width: 34px;
+.taxonomy-close,
+.taxonomy-back {
   min-width: 34px;
   min-height: 34px;
   padding: 0;
   border-color: #cbd2d8;
+}
+
+.taxonomy-close {
+  width: 34px;
   border-radius: 999px;
   font-size: 22px;
   line-height: 1;
+}
+
+.taxonomy-back {
+  width: auto;
+  padding: 0 9px;
+  font-size: 16px;
 }
 
 .taxonomy-modal-content {
@@ -314,7 +329,9 @@ button:disabled {
 
 .taxonomy-row-actions {
   display: flex;
+  flex-wrap: wrap;
   flex-shrink: 0;
+  justify-content: flex-end;
   gap: 5px;
 }
 
@@ -329,14 +346,6 @@ button:disabled {
 
 .danger-text {
   color: #8a3a3a !important;
-}
-
-.taxonomy-category-picker {
-  max-width: 260px;
-}
-
-.taxonomy-category-picker select {
-  padding: 9px 10px;
 }
 
 .taxonomy-empty {
@@ -538,11 +547,17 @@ button:disabled {
     padding: 16px;
   }
 
-  .taxonomy-row {
-    align-items: flex-start;
+  .taxonomy-modal-header {
+    align-items: center;
   }
 
-  .taxonomy-category-picker {
-    max-width: none;
+  .taxonomy-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .taxonomy-row-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 }
