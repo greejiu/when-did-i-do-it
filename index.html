@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>그거 언제 했더라</title>
-  <link rel="stylesheet" href="./css/style.css?v=2" />
+  <link rel="stylesheet" href="./css/style.css?v=3" />
 </head>
 <body>
   <main>
@@ -49,10 +49,78 @@
         <div id="category-list" class="category-list" aria-live="polite"></div>
       </section>
 
-      <p class="muted">다음 단계에서 첫 관리 항목을 추가할 수 있게 만들 거야.</p>
+      <section>
+        <div class="section-heading">
+          <h2>관리 항목</h2>
+          <span id="item-status" class="muted">불러오는 중...</span>
+        </div>
+
+        <button id="item-add-toggle" class="primary add-item-button" type="button">+ 항목 추가</button>
+
+        <form id="item-form" class="item-form hidden">
+          <div class="form-row two-columns">
+            <label>
+              내용
+              <input id="item-name" type="text" placeholder="예: 치즈 발톱 깎기" maxlength="100" required />
+            </label>
+
+            <label>
+              아이콘
+              <input id="item-icon" type="text" placeholder="🐾" maxlength="8" />
+            </label>
+          </div>
+
+          <label>
+            카테고리
+            <select id="item-category" required></select>
+          </label>
+
+          <label>
+            반복
+            <select id="repeat-type">
+              <option value="daily">매일</option>
+              <option value="n_days">N일마다</option>
+              <option value="weekly">매주</option>
+              <option value="monthly">매월</option>
+              <option value="custom">직접 간격 지정</option>
+              <option value="date_only">다음 예정일만 직접 지정</option>
+            </select>
+          </label>
+
+          <div class="form-row two-columns">
+            <label id="repeat-number-group" class="hidden">
+              <span id="repeat-number-label">반복 간격</span>
+              <input id="repeat-number" type="number" min="1" step="1" value="2" />
+            </label>
+
+            <label id="repeat-unit-group" class="hidden">
+              단위
+              <select id="repeat-unit">
+                <option value="day">일</option>
+                <option value="week">주</option>
+                <option value="month">개월</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            다음 예정일 직접 지정 <span class="optional">(선택)</span>
+            <input id="next-due-override" type="date" />
+            <span class="helper">입력하면 반복 주기보다 이 날짜를 우선 사용해.</span>
+          </label>
+
+          <div class="actions">
+            <button id="item-save-button" class="primary" type="submit">저장</button>
+            <button id="item-cancel-button" class="secondary" type="button">취소</button>
+          </div>
+          <p id="item-message" class="message" aria-live="polite"></p>
+        </form>
+
+        <div id="item-list" class="item-list" aria-live="polite"></div>
+      </section>
     </section>
   </main>
 
-  <script type="module" src="./js/auth.js?v=2"></script>
+  <script type="module" src="./js/auth.js?v=3"></script>
 </body>
 </html>
