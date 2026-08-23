@@ -1,5 +1,7 @@
 import "./theme-settings.js?v=1";
+import "./theme-refine.js?v=1";
 import "./scroll-preserve.js?v=1";
+import "./edit-view-preserve.js?v=1";
 import { supabase } from "./supabase.js";
 
 let itemRows = [];
