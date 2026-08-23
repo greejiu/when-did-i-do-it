@@ -1,7 +1,8 @@
 import { supabase } from "./supabase.js";
 
 const toggleButton = document.querySelector("#taxonomy-toggle");
-const panel = document.querySelector("#taxonomy-panel");
+const modal = document.querySelector("#taxonomy-modal");
+const closeButton = document.querySelector("#taxonomy-close");
 const categoryList = document.querySelector("#taxonomy-category-list");
 const addCategoryButton = document.querySelector("#taxonomy-add-category");
 const sectionCategorySelect = document.querySelector("#taxonomy-section-category");
@@ -304,9 +305,15 @@ export function initializeTaxonomyUI(userId, categories, sections, changedCallba
   onChanged = changedCallback;
 
   toggleButton.onclick = () => {
-    panel.classList.toggle("hidden");
-    toggleButton.textContent = panel.classList.contains("hidden") ? "관리" : "닫기";
+    if (!modal.open) modal.showModal();
   };
+
+  closeButton.onclick = () => modal.close();
+
+  modal.onclick = (event) => {
+    if (event.target === modal) modal.close();
+  };
+
   addCategoryButton.onclick = addCategory;
   addSectionButton.onclick = addSection;
   sectionCategorySelect.onchange = renderSectionRows;
@@ -319,8 +326,7 @@ export function resetTaxonomyUI() {
   currentCategories = [];
   currentSections = [];
   onChanged = null;
-  panel.classList.add("hidden");
-  toggleButton.textContent = "관리";
+  if (modal.open) modal.close();
   categoryList.replaceChildren();
   sectionList.replaceChildren();
   sectionCategorySelect.replaceChildren();
