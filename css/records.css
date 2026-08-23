@@ -1,74 +1,53 @@
 .global-record-list {
   display: grid;
-  gap: 14px;
+  gap: 8px;
 }
 
-.global-record-group {
-  padding: 12px;
+.record-item-button {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
   border: 1px solid #cbd2d8;
   border-radius: 12px;
   background: #fff;
+  color: #222;
+  text-align: left;
 }
 
-.global-record-date {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e0e4e7;
+.record-item-button:hover {
+  background: #f7f8f9;
 }
 
-.global-record-date strong {
-  font-size: 14px;
-}
-
-.global-record-rows {
-  display: grid;
-  gap: 7px;
-}
-
-.global-record-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 9px 10px;
-  border-radius: 10px;
-  background: #f5f7f8;
-}
-
-.global-record-main {
+.record-item-main {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 4px;
 }
 
-.global-record-main strong {
+.record-item-main strong {
+  font-size: 15px;
   overflow-wrap: anywhere;
 }
 
-.global-record-category {
+.record-item-meta {
   font-size: 12px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
 }
 
-.global-record-button {
-  width: auto;
+.record-item-arrow {
   flex-shrink: 0;
-  min-height: 30px;
-  padding: 5px 9px;
-  border-color: #cbd2d8;
-  font-size: 12px;
+  color: #7a8289;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
 }
 
 .global-record-empty {
   padding: 24px 0;
   text-align: center;
-}
-
-@media (max-width: 480px) {
-  .global-record-row {
-    align-items: flex-start;
-  }
 }
