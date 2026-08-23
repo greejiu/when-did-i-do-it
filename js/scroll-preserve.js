@@ -65,6 +65,7 @@ const observer = new MutationObserver((mutations) => {
 
     if (dialog.classList.contains("quick-add-modal")) {
       if (dialog.open) {
+        window.clearTimeout(clearTimer);
         restoreScrollBurst();
       } else {
         restoreScrollBurst();
