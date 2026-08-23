@@ -1,15 +1,15 @@
 import { supabase } from "./supabase.js";
 
 const DEFAULT_CATEGORIES = [
-  { name: "집안일", icon: "🏠" },
-  { name: "반려동물 관리", icon: "🐾" },
+  { name: "🏠 집안일" },
+  { name: "🐾 반려동물 관리" },
 ];
 
 export async function ensureDefaultCategories(userId) {
   const rows = DEFAULT_CATEGORIES.map((category) => ({
     user_id: userId,
     name: category.name,
-    icon: category.icon,
+    icon: null,
   }));
 
   const { error } = await supabase
