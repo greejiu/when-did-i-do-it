@@ -9,7 +9,9 @@ const DEFAULT_HOUSE_SECTIONS = [
 ];
 
 export async function ensureDefaultSections(userId, categories) {
-  const householdCategory = categories.find((category) => category.name === "집안일");
+  const householdCategory = categories.find(
+    (category) => category.name === "🏠 집안일" || category.name === "집안일"
+  );
   if (!householdCategory) return;
 
   const rows = DEFAULT_HOUSE_SECTIONS.map((section) => ({
