@@ -185,8 +185,11 @@ button:disabled {
 }
 
 .add-item-button {
-  width: 100%;
+  width: auto;
+  min-height: 34px;
   margin-bottom: 12px;
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
 .item-form {
@@ -263,12 +266,14 @@ button:disabled {
 .item-card-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .complete-button {
-  min-height: 38px;
-  padding: 8px 14px;
+  width: auto;
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
 .empty-state {
@@ -308,8 +313,11 @@ button:disabled {
     flex-direction: column;
   }
 
-  .item-card-actions,
-  .complete-button {
+  .item-card-actions {
     width: 100%;
+  }
+
+  .complete-button {
+    width: auto;
   }
 }
