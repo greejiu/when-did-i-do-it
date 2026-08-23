@@ -1,7 +1,7 @@
 import { supabase } from "./supabase.js";
 import { ensureDefaultCategories, getCategories } from "./categories.js?v=10";
 import { ensureDefaultSections, getSections } from "./sections.js?v=10";
-import { initializeItemsUI, resetItemsUI } from "./items.js?v=9";
+import { initializeItemsUI, resetItemsUI } from "./items.js?v=13";
 import { initializeTaxonomyUI, resetTaxonomyUI } from "./taxonomy.js?v=12";
 
 const authSection = document.querySelector("#auth-section");
@@ -171,7 +171,7 @@ async function signup() {
 
   if (data.session?.user) {
     showLoggedIn(data.session.user);
-    await initializeLoggedInApp(data.session.user);
+    await initializeLoggedInApp(data.user);
     return;
   }
 
