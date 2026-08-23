@@ -1,5 +1,6 @@
 import "./item-taxonomy-quick.js?v=1";
 import "./sorting.js?v=1";
+import "./sort-quick-popup.js?v=1";
 
 const repeatTypeSelect = document.querySelector("#repeat-type");
 const nextDueInput = document.querySelector("#next-due-override");
