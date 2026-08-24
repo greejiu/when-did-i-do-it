@@ -3,7 +3,7 @@
 await import("./auth.js?v=21");
 await import("./card-menu.js?v=2");
 await import("./category-quick-add.js?v=5");
-await import("./item-taxonomy-quick.js?v=3");
+await import("./item-taxonomy-quick.js?v=4");
 await import("./sorting.js?v=1");
 await import("./anytime.js?v=3");
 await import("./theme-settings.js?v=2");
