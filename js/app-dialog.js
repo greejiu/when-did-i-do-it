@@ -8,106 +8,6 @@ let confirmButton = null;
 let activeResolve = null;
 let mode = "confirm";
 
-function ensureStyles() {
-  if (document.querySelector("#app-dialog-styles")) return;
-
-  const style = document.createElement("style");
-  style.id = "app-dialog-styles";
-  style.textContent = `
-    .app-action-dialog {
-      width: min(390px, calc(100% - 32px));
-      margin: auto;
-      padding: 0;
-      border: 1px solid #d7d5cb;
-      border-radius: 18px;
-      background: #fbfaf6;
-      color: #30342f;
-      box-shadow: 0 20px 60px rgba(58, 63, 55, 0.2);
-    }
-
-    .app-action-dialog::backdrop {
-      background: rgba(62, 66, 58, 0.32);
-      backdrop-filter: blur(1px);
-    }
-
-    .app-action-dialog-shell {
-      padding: 20px;
-    }
-
-    .app-action-dialog h3 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-
-    .app-action-dialog-message {
-      margin: 0;
-      color: #676d65;
-      font-size: 14px;
-      line-height: 1.55;
-      white-space: pre-line;
-    }
-
-    .app-action-dialog-input-wrap {
-      display: grid;
-      gap: 6px;
-      margin-top: 15px;
-    }
-
-    .app-action-dialog-input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px 11px;
-      border: 1px solid #d7d5cb;
-      border-radius: 10px;
-      background: #fffefa;
-      color: #30342f;
-      font: inherit;
-    }
-
-    .app-action-dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 18px;
-    }
-
-    .app-action-dialog button {
-      min-height: 36px;
-      padding: 7px 13px;
-      border-radius: 10px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .app-action-dialog-cancel {
-      border: 1px solid #d7d5cb;
-      background: #fffefa;
-      color: #30342f;
-    }
-
-    .app-action-dialog-confirm {
-      border: 1px solid #4f5f50;
-      background: #4f5f50;
-      color: #fffdf8;
-    }
-
-    .app-action-dialog-confirm.is-danger {
-      border-color: #8d5a54;
-      background: #8d5a54;
-    }
-
-    .app-action-dialog.notice-mode .app-action-dialog-actions {
-      justify-content: center;
-    }
-
-    .app-action-dialog.notice-mode .app-action-dialog-confirm {
-      min-width: 82px;
-    }
-  `;
-  document.head.append(style);
-}
-
 function finish(value) {
   if (!activeResolve) return;
   const resolve = activeResolve;
@@ -118,7 +18,6 @@ function finish(value) {
 
 function ensureDialog() {
   if (dialog) return dialog;
-  ensureStyles();
 
   dialog = document.createElement("dialog");
   dialog.className = "app-action-dialog";
