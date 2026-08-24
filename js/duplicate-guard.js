@@ -4,30 +4,6 @@ let noticeTimer = null;
 function ensureNoticeDialog() {
   if (noticeDialog) return noticeDialog;
 
-  const style = document.createElement("style");
-  style.textContent = `
-    .mini-notice-dialog {
-      width: auto;
-      max-width: min(340px, calc(100% - 36px));
-      margin: auto;
-      padding: 13px 18px;
-      border: 1px solid #cfd5c9;
-      border-radius: 14px;
-      background: #fffefa;
-      color: #30342f;
-      box-shadow: 0 14px 38px rgba(58, 63, 55, 0.18);
-      font: inherit;
-      font-size: 14px;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .mini-notice-dialog::backdrop {
-      background: transparent;
-    }
-  `;
-  document.head.append(style);
-
   noticeDialog = document.createElement("dialog");
   noticeDialog.className = "mini-notice-dialog";
   noticeDialog.addEventListener("click", () => {
