@@ -4,12 +4,14 @@ const historyModal = document.querySelector("#history-modal");
 const historyTitle = document.querySelector("#history-title");
 const monthLabel = document.querySelector("#history-month-label");
 const calendarGrid = document.querySelector("#history-calendar-grid");
+const historyRecordCard = historyModal?.querySelector(".history-record-card");
 
 let lastCardItemId = null;
 let lastCardItemName = "";
 let currentHistoryItemId = null;
 let subitemCountsByDay = new Map();
 let augmentTimer = null;
+let historyLoadToken = 0;
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -18,6 +20,11 @@ function pad(value) {
 function toLocalDateKey(value) {
   const date = new Date(value);
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function formatHistoryDate(value) {
+  const date = new Date(value);
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`;
 }
 
 function cleanText(value) {
@@ -47,41 +54,105 @@ async function resolveCurrentItemId() {
   return data?.[0]?.id ?? null;
 }
 
+function ensureSubitemHistoryBlock() {
+  if (!(historyRecordCard instanceof HTMLElement)) return null;
+
+  let block = historyRecordCard.querySelector(".subitem-history-block");
+  if (block instanceof HTMLElement) return block;
+
+  block = document.createElement("div");
+  block.className = "subitem-history-block";
+  block.hidden = true;
+  block.innerHTML = `
+    <div class="subitem-history-heading">
+      <h4>하위 할일 기록</h4>
+      <span class="subitem-history-count"></span>
+    </div>
+    <div class="subitem-history-list"></div>
+  `;
+  historyRecordCard.append(block);
+  return block;
+}
+
+function renderSubitemHistory(records) {
+  const block = ensureSubitemHistoryBlock();
+  if (!(block instanceof HTMLElement)) return;
+
+  const list = block.querySelector(".subitem-history-list");
+  const count = block.querySelector(".subitem-history-count");
+  if (!(list instanceof HTMLElement)) return;
+
+  list.replaceChildren();
+  if (count) count.textContent = `${records.length}개`;
+
+  if (records.length === 0) {
+    block.hidden = true;
+    return;
+  }
+
+  block.hidden = false;
+  for (const record of records) {
+    const row = document.createElement("div");
+    row.className = "subitem-history-row";
+
+    const date = document.createElement("strong");
+    date.textContent = formatHistoryDate(record.completed_at);
+
+    const name = document.createElement("span");
+    name.textContent = record.name;
+
+    row.append(date, name);
+    list.append(row);
+  }
+}
+
 async function loadSubitemHistory() {
   if (!(historyModal instanceof HTMLDialogElement) || !historyModal.open) return;
 
+  const token = ++historyLoadToken;
   currentHistoryItemId = await resolveCurrentItemId();
+  if (token !== historyLoadToken) return;
+
   subitemCountsByDay = new Map();
   if (!currentHistoryItemId) {
     applyDots();
+    renderSubitemHistory([]);
     return;
   }
 
   const { data: subitems, error: subitemError } = await supabase
     .from("sub_items")
-    .select("id")
+    .select("id, name")
     .eq("item_id", currentHistoryItemId);
+
+  if (token !== historyLoadToken) return;
 
   if (subitemError) {
     console.error(subitemError);
     applyDots();
+    renderSubitemHistory([]);
     return;
   }
 
   const ids = (subitems ?? []).map((row) => row.id);
   if (ids.length === 0) {
     applyDots();
+    renderSubitemHistory([]);
     return;
   }
 
   const { data: records, error: recordError } = await supabase
     .from("subitem_completion_records")
-    .select("completed_at")
-    .in("sub_item_id", ids);
+    .select("id, sub_item_id, completed_at")
+    .in("sub_item_id", ids)
+    .order("completed_at", { ascending: false });
+
+  if (token !== historyLoadToken) return;
 
   if (recordError) {
     console.error(recordError);
     applyDots();
+    renderSubitemHistory([]);
     return;
   }
 
@@ -90,7 +161,14 @@ async function loadSubitemHistory() {
     subitemCountsByDay.set(key, (subitemCountsByDay.get(key) ?? 0) + 1);
   }
 
+  const names = new Map((subitems ?? []).map((row) => [row.id, row.name]));
+  const historyRows = (records ?? []).map((record) => ({
+    ...record,
+    name: names.get(record.sub_item_id) || "하위 할일",
+  }));
+
   applyDots();
+  renderSubitemHistory(historyRows);
 }
 
 function getVisibleYearMonth() {
@@ -141,12 +219,17 @@ document.addEventListener(
   true
 );
 
+window.addEventListener("app:subitems-changed", () => scheduleAugment({ reload: true }));
+
 if (historyModal instanceof HTMLDialogElement) {
   const modalObserver = new MutationObserver(() => {
-    if (historyModal.open) scheduleAugment({ reload: true });
-    else {
+    if (historyModal.open) {
+      scheduleAugment({ reload: true });
+    } else {
+      historyLoadToken += 1;
       currentHistoryItemId = null;
       subitemCountsByDay = new Map();
+      renderSubitemHistory([]);
     }
   });
   modalObserver.observe(historyModal, { attributes: true, attributeFilter: ["open"] });
@@ -157,4 +240,5 @@ if (calendarGrid instanceof HTMLElement) {
   gridObserver.observe(calendarGrid, { childList: true, subtree: false });
 }
 
+ensureSubitemHistoryBlock();
 if (historyModal?.open) scheduleAugment({ reload: true });
