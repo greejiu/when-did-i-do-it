@@ -11,6 +11,12 @@
   background: transparent;
 }
 
+/* 섹션의 예전 왼쪽 들여쓰기/라인은 카드 스타일에서 직접 해제한다. */
+.item-section-group {
+  padding-left: 0;
+  border-left: 0;
+}
+
 .item-category-heading {
   display: flex;
   align-items: center;
