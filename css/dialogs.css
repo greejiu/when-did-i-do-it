@@ -1,0 +1,292 @@
+.quick-add-modal {
+  width: min(560px, calc(100% - 28px));
+  margin: auto;
+  padding: 0;
+  border: 1px solid #d7d5cb;
+  border-radius: 18px;
+  background: #fbfaf6;
+  color: #30342f;
+  box-shadow: 0 24px 70px rgba(58, 63, 55, 0.18);
+}
+
+.quick-add-modal::backdrop {
+  background: rgba(62, 66, 58, 0.34);
+}
+
+.quick-add-modal-shell {
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.quick-add-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e3e0d7;
+}
+
+.quick-add-modal-header h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.quick-add-modal-header p {
+  margin: 0;
+  color: #71766e;
+  font-size: 12px;
+}
+
+.quick-add-close {
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 999px;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.quick-add-form-slot .item-form {
+  margin-top: 0;
+}
+
+.quick-add-form-slot .item-form.hidden {
+  display: none;
+}
+
+.quick-taxonomy-field-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.quick-taxonomy-field-wrap > label {
+  display: grid;
+  height: 100%;
+}
+
+.quick-taxonomy-add {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  z-index: 2;
+  min-height: 28px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #59695a;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quick-taxonomy-add:hover {
+  background: #e9eee7;
+  color: #3f5141;
+}
+
+.quick-taxonomy-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(62, 66, 58, 0.34);
+  backdrop-filter: blur(1px);
+}
+
+.quick-taxonomy-dialog {
+  width: min(360px, 100%);
+  padding: 18px;
+  border: 1px solid #d7d5cb;
+  border-radius: 18px;
+  background: #fbfaf6;
+  color: #30342f;
+  box-shadow: 0 20px 60px rgba(58, 63, 55, 0.22);
+}
+
+.quick-taxonomy-dialog h3 {
+  margin: 0 0 7px;
+  font-size: 18px;
+}
+
+.quick-taxonomy-dialog p {
+  margin: 0;
+  color: #676d65;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.quick-taxonomy-dialog input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 14px;
+  padding: 10px 11px;
+  border: 1px solid #d7d5cb;
+  border-radius: 10px;
+  background: #fffefa;
+  color: #30342f;
+  font: inherit;
+}
+
+.quick-taxonomy-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.quick-taxonomy-dialog-actions button {
+  min-height: 36px;
+  padding: 7px 13px;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quick-taxonomy-cancel {
+  border: 1px solid #d7d5cb;
+  background: #fffefa;
+  color: #30342f;
+}
+
+.quick-taxonomy-confirm {
+  border: 1px solid #4f5f50;
+  background: #4f5f50;
+  color: #fffdf8;
+}
+
+.app-action-dialog {
+  width: min(390px, calc(100% - 32px));
+  margin: auto;
+  padding: 0;
+  border: 1px solid #d7d5cb;
+  border-radius: 18px;
+  background: #fbfaf6;
+  color: #30342f;
+  box-shadow: 0 20px 60px rgba(58, 63, 55, 0.2);
+}
+
+.app-action-dialog::backdrop {
+  background: rgba(62, 66, 58, 0.32);
+  backdrop-filter: blur(1px);
+}
+
+.app-action-dialog-shell {
+  padding: 20px;
+}
+
+.app-action-dialog h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.app-action-dialog-message {
+  margin: 0;
+  color: #676d65;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.app-action-dialog-input-wrap {
+  display: grid;
+  gap: 6px;
+  margin-top: 15px;
+}
+
+.app-action-dialog-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 11px;
+  border: 1px solid #d7d5cb;
+  border-radius: 10px;
+  background: #fffefa;
+  color: #30342f;
+  font: inherit;
+}
+
+.app-action-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.app-action-dialog button {
+  min-height: 36px;
+  padding: 7px 13px;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-action-dialog-cancel {
+  border: 1px solid #d7d5cb;
+  background: #fffefa;
+  color: #30342f;
+}
+
+.app-action-dialog-confirm {
+  border: 1px solid #4f5f50;
+  background: #4f5f50;
+  color: #fffdf8;
+}
+
+.app-action-dialog-confirm.is-danger {
+  border-color: #8d5a54;
+  background: #8d5a54;
+}
+
+.app-action-dialog.notice-mode .app-action-dialog-actions {
+  justify-content: center;
+}
+
+.app-action-dialog.notice-mode .app-action-dialog-confirm {
+  min-width: 82px;
+}
+
+.mini-notice-dialog {
+  width: auto;
+  max-width: min(340px, calc(100% - 36px));
+  margin: auto;
+  padding: 13px 18px;
+  border: 1px solid #cfd5c9;
+  border-radius: 14px;
+  background: #fffefa;
+  color: #30342f;
+  box-shadow: 0 14px 38px rgba(58, 63, 55, 0.18);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.mini-notice-dialog::backdrop {
+  background: transparent;
+}
+
+@media (max-width: 480px) {
+  .quick-add-modal {
+    width: calc(100% - 16px);
+    border-radius: 16px;
+  }
+
+  .quick-add-modal-shell {
+    max-height: 92vh;
+    padding: 16px;
+  }
+
+  .quick-add-modal-header h2 {
+    font-size: 20px;
+  }
+}
