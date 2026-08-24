@@ -14,11 +14,13 @@ const addButton = document.querySelector("#history-add-button");
 const message = document.querySelector("#history-message");
 const recordCount = document.querySelector("#history-record-count");
 const recordList = document.querySelector("#history-record-list");
+const historyRecordCard = modal?.querySelector(".history-record-card");
 
 let currentUserId = null;
 let currentItem = null;
 let currentRecords = [];
 let currentSubitemRecords = [];
+let currentSubitemNames = new Map();
 let visibleMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let onRecordsChanged = null;
 
@@ -146,6 +148,58 @@ function createSmallButton(text, className = "secondary") {
   return button;
 }
 
+function ensureSubitemHistoryBlock() {
+  if (!(historyRecordCard instanceof HTMLElement)) return null;
+
+  let block = historyRecordCard.querySelector(".subitem-history-block");
+  if (block instanceof HTMLElement) return block;
+
+  block = document.createElement("div");
+  block.className = "subitem-history-block";
+  block.hidden = true;
+  block.innerHTML = `
+    <div class="subitem-history-heading">
+      <h4>하위 할일 기록</h4>
+      <span class="subitem-history-count"></span>
+    </div>
+    <div class="subitem-history-list"></div>
+  `;
+  historyRecordCard.append(block);
+  return block;
+}
+
+function renderSubitemHistoryList() {
+  const block = ensureSubitemHistoryBlock();
+  if (!(block instanceof HTMLElement)) return;
+
+  const list = block.querySelector(".subitem-history-list");
+  const count = block.querySelector(".subitem-history-count");
+  if (!(list instanceof HTMLElement)) return;
+
+  list.replaceChildren();
+  if (count) count.textContent = `${currentSubitemRecords.length}개`;
+
+  if (currentSubitemRecords.length === 0) {
+    block.hidden = true;
+    return;
+  }
+
+  block.hidden = false;
+  for (const record of currentSubitemRecords) {
+    const row = document.createElement("div");
+    row.className = "subitem-history-row";
+
+    const date = document.createElement("strong");
+    date.textContent = formatDateKey(timestampToDateKey(record.completed_at));
+
+    const name = document.createElement("span");
+    name.textContent = currentSubitemNames.get(record.sub_item_id) || "하위 할일";
+
+    row.append(date, name);
+    list.append(row);
+  }
+}
+
 async function saveEditedRecord(record, value, row) {
   if (!isValidPastOrToday(value)) {
     window.alert("오늘 또는 과거 날짜를 선택해 주세요.");
@@ -268,10 +322,12 @@ async function loadRecords() {
 
   const { data: subitems, error: subitemError } = await supabase
     .from("sub_items")
-    .select("id")
+    .select("id, name")
     .eq("item_id", currentItem.id);
 
   if (subitemError) throw subitemError;
+
+  currentSubitemNames = new Map((subitems ?? []).map((subitem) => [subitem.id, subitem.name]));
   const subitemIds = (subitems ?? []).map((subitem) => subitem.id);
   currentSubitemRecords = [];
 
@@ -288,6 +344,7 @@ async function loadRecords() {
 
   renderCalendar();
   renderRecordList();
+  renderSubitemHistoryList();
 }
 
 async function refreshAfterChange(text) {
@@ -361,9 +418,11 @@ function closeHistoryModal() {
   currentItem = null;
   currentRecords = [];
   currentSubitemRecords = [];
+  currentSubitemNames = new Map();
   onRecordsChanged = null;
   recordList.replaceChildren();
   calendarGrid.replaceChildren();
+  renderSubitemHistoryList();
   setMessage("");
 }
 
@@ -381,5 +440,7 @@ modal.addEventListener("close", () => {
   currentItem = null;
   currentRecords = [];
   currentSubitemRecords = [];
+  currentSubitemNames = new Map();
   onRecordsChanged = null;
+  renderSubitemHistoryList();
 });
