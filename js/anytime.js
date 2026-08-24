@@ -1,6 +1,7 @@
 const repeatTypeSelect = document.querySelector("#repeat-type");
 const nextDueInput = document.querySelector("#next-due-override");
 const itemForm = document.querySelector("#item-form");
+const itemLists = [...document.querySelectorAll("#item-list, #category-item-list")];
 
 function ensureAnytimeOption() {
   if (!(repeatTypeSelect instanceof HTMLSelectElement)) return;
@@ -35,7 +36,17 @@ function syncAnytimeFields() {
 }
 
 function showAnytimeOnCards(root = document) {
+  const spans = [];
+
+  if (root instanceof HTMLSpanElement && root.matches(".item-meta span")) {
+    spans.push(root);
+  }
+
   for (const span of root.querySelectorAll?.(".item-meta span") || []) {
+    spans.push(span);
+  }
+
+  for (const span of spans) {
     if (span.textContent?.trim() === "반복 없음") {
       span.textContent = "아무때나";
     }
@@ -77,11 +88,11 @@ document.addEventListener("click", (event) => {
 const observer = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes) {
-      if (!(node instanceof HTMLElement)) continue;
-      if (node.matches(".item-card")) showAnytimeOnCards(node.parentElement ?? node);
-      showAnytimeOnCards(node);
+      if (node instanceof HTMLElement) showAnytimeOnCards(node);
     }
   }
 });
 
-observer.observe(document.body, { childList: true, subtree: true });
+for (const itemList of itemLists) {
+  observer.observe(itemList, { childList: true, subtree: true });
+}
