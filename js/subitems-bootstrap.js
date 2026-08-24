@@ -7,3 +7,4 @@ import "./edit-view-preserve.js?v=1";
 // Keep this bootstrap focused on loading the subitem-related modules only.
 await import("./subitems.js?v=2");
 await import("./history-subitems-compat.js?v=1");
+await import("./subitems-inline-actions.js?v=4");
