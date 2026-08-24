@@ -1,6 +1,6 @@
 // Single application entry point.
 // Keep the current execution order while the remaining patch-style modules are cleaned up.
-await import("./auth.js?v=21");
+await import("./auth.js?v=22");
 await import("./card-menu.js?v=2");
 await import("./duplicate-guard.js?v=1");
 await import("./delete-dialog-guard.js?v=1");
