@@ -276,6 +276,61 @@ body.history-modal-open {
   color: #505960;
 }
 
+/* Records tab list */
+.global-record-list {
+  display: grid;
+  gap: 8px;
+}
+
+.record-item-button {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid #cbd2d8;
+  border-radius: 12px;
+  background: #fff;
+  color: #222;
+  text-align: left;
+}
+
+.record-item-button:hover {
+  background: #f7f8f9;
+}
+
+.record-item-main {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.record-item-main strong {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.record-item-meta {
+  font-size: 12px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.record-item-arrow {
+  flex-shrink: 0;
+  color: #7a8289;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.global-record-empty {
+  padding: 24px 0;
+  text-align: center;
+}
+
 @media (max-width: 480px) {
   .history-modal {
     width: calc(100% - 16px);
