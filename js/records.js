@@ -1,5 +1,5 @@
 import { supabase } from "./supabase.js";
-import { openHistoryModal } from "./history.js?v=1";
+import { openHistoryModal } from "./history.js?v=2";
 
 const recordList = document.querySelector("#global-record-list");
 const recordStatus = document.querySelector("#global-record-status");
