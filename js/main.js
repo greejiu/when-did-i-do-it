@@ -1,0 +1,13 @@
+// Single application entry point.
+// Keep the current execution order while the remaining patch-style modules are cleaned up.
+await import("./auth.js?v=21");
+await import("./card-menu.js?v=2");
+await import("./category-quick-add.js?v=5");
+await import("./anytime.js?v=2");
+await import("./sorting.js?v=1");
+await import("./item-taxonomy-quick.js?v=3");
+await import("./theme-settings.js?v=1");
+await import("./theme-refine.js?v=1");
+await import("./scroll-preserve.js?v=1");
+await import("./edit-view-preserve.js?v=1");
+await import("./subitems.js?v=3");
