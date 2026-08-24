@@ -4,6 +4,5 @@ import "./scroll-preserve.js?v=1";
 import "./edit-view-preserve.js?v=1";
 
 // item cards already receive data-item-id when items.js renders them.
-// Keep this bootstrap focused on loading the subitem-related modules only.
+// Keep this bootstrap focused on loading the subitem module only.
 await import("./subitems.js?v=3");
-await import("./history-subitems-compat.js?v=2");
