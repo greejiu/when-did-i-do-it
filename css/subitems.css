@@ -251,3 +251,232 @@
     height: 5px;
   }
 }
+
+/* Inline subitem actions and subitem history */
+.subitem-progress-heading.is-inline-compact {
+  justify-content: flex-end;
+  min-height: 24px;
+  margin-bottom: 4px;
+}
+
+.subitem-inline-count {
+  color: #7a8078;
+  font-size: 11px;
+}
+
+.subitem-inline-manage-button {
+  width: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 1px solid #d7d5cb;
+  border-radius: 999px;
+  background: #fffefa;
+  color: #59695a;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.subitem-inline-manage-button:hover {
+  background: #e9eee7;
+  color: #3f5141;
+}
+
+.subitem-check-row.is-inline-action-row {
+  border-radius: 7px;
+}
+
+.subitem-check-row.is-inline-action-row:hover {
+  background: #f0f2ec;
+}
+
+.subitem-inline-action-dialog {
+  width: min(340px, calc(100% - 28px));
+  margin: auto;
+  padding: 0;
+  border: 1px solid #d7d5cb;
+  border-radius: 18px;
+  background: #fbfaf6;
+  color: #30342f;
+  box-shadow: 0 20px 60px rgba(58, 63, 55, 0.2);
+}
+
+.subitem-inline-action-dialog::backdrop {
+  background: rgba(62, 66, 58, 0.34);
+  backdrop-filter: blur(1px);
+}
+
+.subitem-inline-action-shell {
+  padding: 18px;
+}
+
+.subitem-inline-action-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.subitem-inline-action-header h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.subitem-inline-action-header p {
+  margin: 0;
+  color: #71766e;
+  font-size: 12px;
+}
+
+.subitem-inline-action-close {
+  width: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: 1px solid #d7d5cb;
+  border-radius: 999px;
+  background: #fffefa;
+  color: #30342f;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.subitem-inline-action-list {
+  display: grid;
+  gap: 7px;
+}
+
+.subitem-inline-action-list button {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 11px;
+  border: 1px solid #d7d5cb;
+  border-radius: 10px;
+  background: #fffefa;
+  color: #30342f;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.subitem-inline-action-list button:hover {
+  background: #e9eee7;
+}
+
+.subitem-inline-action-list button.is-danger {
+  color: #9a5d58;
+}
+
+.subitem-inline-action-list button.is-cancel {
+  color: #71766e;
+}
+
+.subitem-history-block {
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid #d4ddd1;
+}
+
+.subitem-history-block[hidden] {
+  display: none;
+}
+
+.subitem-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.subitem-history-heading h4 {
+  margin: 0;
+  color: #49554a;
+  font-size: 14px;
+}
+
+.subitem-history-count {
+  color: #7a8078;
+  font-size: 12px;
+}
+
+.subitem-history-list {
+  display: grid;
+  gap: 6px;
+}
+
+.subitem-history-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 1px solid #d9ded5;
+  border-radius: 9px;
+  background: #f8f8f3;
+}
+
+.subitem-history-row strong {
+  color: #536154;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.subitem-history-row span {
+  min-width: 0;
+  color: #4c514b;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* 오늘은 따뜻한 색으로, 완료 기록 원은 한 톤 더 진한 세이지로 구분 */
+.history-calendar-day.is-today {
+  color: #9a5d58;
+}
+
+.history-calendar-day.is-today:not(.has-record)::before {
+  border: 1.5px solid #bc7e76;
+}
+
+.history-calendar-day.has-record {
+  color: #435544;
+}
+
+.history-calendar-day.has-record::before {
+  background: #d5dfd2;
+  border-color: #adbba8;
+}
+
+.history-calendar-day.has-record.is-today {
+  color: #8f544e;
+}
+
+.history-calendar-day.has-record.is-today::before {
+  background: #ccd9c9;
+  border-color: #a4b3a0;
+  box-shadow: 0 0 0 2px var(--comfort-sage), 0 0 0 3px #bc7e76;
+}
+
+@media (max-width: 480px) {
+  .subitem-inline-manage-button {
+    width: 26px;
+    min-width: 26px;
+    min-height: 26px;
+  }
+
+  .subitem-inline-action-dialog {
+    width: calc(100% - 24px);
+  }
+
+  .subitem-history-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
