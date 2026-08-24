@@ -7,6 +7,5 @@ await import("./anytime.js?v=2");
 await import("./sorting.js?v=1");
 await import("./item-taxonomy-quick.js?v=3");
 await import("./theme-settings.js?v=2");
-await import("./scroll-preserve.js?v=1");
-await import("./edit-view-preserve.js?v=1");
+await import("./scroll-preserve.js?v=2");
 await import("./subitems.js?v=3");
