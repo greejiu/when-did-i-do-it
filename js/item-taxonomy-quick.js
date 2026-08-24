@@ -7,128 +7,11 @@ import { initializeTaxonomyUI } from "./taxonomy.js?v=13";
 const categorySelect = document.querySelector("#item-category");
 const sectionSelect = document.querySelector("#item-section");
 
-function ensureStyles() {
-  if (document.querySelector("#item-taxonomy-quick-styles")) return;
-
-  const style = document.createElement("style");
-  style.id = "item-taxonomy-quick-styles";
-  style.textContent = `
-    .quick-taxonomy-field-wrap {
-      position: relative;
-      min-width: 0;
-    }
-
-    .quick-taxonomy-field-wrap > label {
-      display: grid;
-      height: 100%;
-    }
-
-    .quick-taxonomy-add {
-      position: absolute;
-      top: -2px;
-      right: 0;
-      z-index: 2;
-      min-height: 28px;
-      padding: 3px 8px;
-      border: 0;
-      border-radius: 8px;
-      background: transparent;
-      color: #59695a;
-      font: inherit;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .quick-taxonomy-add:hover {
-      background: #e9eee7;
-      color: #3f5141;
-    }
-
-    .quick-taxonomy-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1200;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-      background: rgba(62, 66, 58, 0.34);
-      backdrop-filter: blur(1px);
-    }
-
-    .quick-taxonomy-dialog {
-      width: min(360px, 100%);
-      padding: 18px;
-      border: 1px solid #d7d5cb;
-      border-radius: 18px;
-      background: #fbfaf6;
-      color: #30342f;
-      box-shadow: 0 20px 60px rgba(58, 63, 55, 0.22);
-    }
-
-    .quick-taxonomy-dialog h3 {
-      margin: 0 0 7px;
-      font-size: 18px;
-    }
-
-    .quick-taxonomy-dialog p {
-      margin: 0;
-      color: #676d65;
-      font-size: 14px;
-      line-height: 1.5;
-      white-space: pre-line;
-    }
-
-    .quick-taxonomy-dialog input {
-      width: 100%;
-      box-sizing: border-box;
-      margin-top: 14px;
-      padding: 10px 11px;
-      border: 1px solid #d7d5cb;
-      border-radius: 10px;
-      background: #fffefa;
-      color: #30342f;
-      font: inherit;
-    }
-
-    .quick-taxonomy-dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 16px;
-    }
-
-    .quick-taxonomy-dialog-actions button {
-      min-height: 36px;
-      padding: 7px 13px;
-      border-radius: 10px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .quick-taxonomy-cancel {
-      border: 1px solid #d7d5cb;
-      background: #fffefa;
-      color: #30342f;
-    }
-
-    .quick-taxonomy-confirm {
-      border: 1px solid #4f5f50;
-      background: #4f5f50;
-      color: #fffdf8;
-    }
-  `;
-  document.head.append(style);
-}
-
 function getOverlayHost() {
   return document.querySelector(".quick-add-modal[open]") || document.body;
 }
 
 function showInlinePrompt({ title, message, placeholder = "" }) {
-  ensureStyles();
-
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.className = "quick-taxonomy-overlay";
@@ -181,8 +64,6 @@ function showInlinePrompt({ title, message, placeholder = "" }) {
 }
 
 function showInlineNotice(title, message) {
-  ensureStyles();
-
   return new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.className = "quick-taxonomy-overlay";
